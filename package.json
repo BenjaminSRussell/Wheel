@@ -1,0 +1,38 @@
+{
+  "name": "3d-carnival-wheel",
+  "version": "1.0.0",
+  "description": "Immersive 3D Carnival Wheel with PBR materials, Rapier physics, and bloom effects",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "start": "live-server --port=8080 --host=127.0.0.1",
+    "dev": "live-server --port=8080 --host=127.0.0.1 --open",
+    "test": "live-server --port=8080 --host=127.0.0.1 --open=diagnostic.html"
+  },
+  "keywords": [
+    "three.js",
+    "webgl",
+    "3d",
+    "carnival",
+    "wheel",
+    "physics",
+    "rapier",
+    "pbr",
+    "bloom"
+  ],
+  "author": "Benjamin Russell",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "three": "0.170.0",
+    "three.quarks": "0.12.3",
+    "@dimforge/rapier3d-compat": "0.14.0",
+    "postprocessing": "6.36.4"
+  },
+  "devDependencies": {
+    "live-server": "1.2.2"
+  }
+}
