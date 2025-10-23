@@ -1,89 +1,69 @@
 import * as THREE from 'three';
+import { WheelRenderer } from './core/WheelRenderer.js';
+import { LightingSystem } from './core/LightingSystem.js';
+import { SpinController } from './SpinController.js';
 
-let camera, scene, renderer;
-let wheel;
+// Scene setup
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a0a0a);
 
-function init() {
-    console.log('Starting simple wheel...');
+const camera = new THREE.PerspectiveCamera(
+  50,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
+camera.position.z = 12;
 
-    // Scene
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x222222);
+const canvas = document.querySelector('#c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    // Camera
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = 10;
+// Core systems
+const wheel = new WheelRenderer(scene);
+const lighting = new LightingSystem(scene, camera, renderer);
+const spinController = new SpinController();
 
-    // Renderer
-    const canvas = document.querySelector('#c');
-    renderer = new THREE.WebGLRenderer({ canvas });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-
-    // Create simple wheel
-    const wheelGeometry = new THREE.CircleGeometry(3, 32);
-    const wheelMaterial = new THREE.MeshBasicMaterial({ 
-        color: 0xff0000,
-        side: THREE.DoubleSide
+// Spin button
+const spinButton = document.getElementById('spinButton');
+spinButton.addEventListener('click', () => {
+  if (!spinController.isSpinning) {
+    spinController.startSpin((finalAngle) => {
+      console.log('Final angle:', finalAngle);
+      spinButton.disabled = false;
     });
-    wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
-    scene.add(wheel);
+    spinButton.disabled = true;
+  }
+});
 
-    // Create pointer
-    const pointerGeometry = new THREE.ConeGeometry(0.2, 1, 8);
-    const pointerMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const pointer = new THREE.Mesh(pointerGeometry, pointerMaterial);
-    pointer.position.set(0, 3.5, 0);
-    pointer.rotation.z = Math.PI;
-    scene.add(pointer);
-
-    // Add lighting
-    const light = new THREE.AmbientLight(0xffffff, 1);
-    scene.add(light);
-
-    console.log('Simple wheel created!');
-    
-    // Connect spin button
-    const spinButton = document.getElementById('spinButton');
-    if (spinButton) {
-        spinButton.addEventListener('click', spinWheel);
-        console.log('Spin button connected!');
-    }
-    
-    animate();
+// Animation loop
+let lastTime = 0;
+function animate(currentTime) {
+  requestAnimationFrame(animate);
+  
+  const deltaTime = (currentTime - lastTime) / 1000;
+  lastTime = currentTime;
+  
+  // Update wheel rotation
+  const angle = spinController.update();
+  wheel.updateRotation(angle);
+  
+  // Update LED pulse
+  wheel.updateLEDs(currentTime * 0.001);
+  
+  // Render
+  lighting.render();
 }
 
-let isSpinning = false;
-let spinSpeed = 0;
-let spinDecay = 0.98;
+animate(0);
 
-function animate() {
-    requestAnimationFrame(animate);
-    
-    if (isSpinning) {
-        // Apply spin
-        wheel.rotation.z += spinSpeed;
-        // Decay spin speed
-        spinSpeed *= spinDecay;
-        
-        // Stop when very slow
-        if (spinSpeed < 0.001) {
-            isSpinning = false;
-            spinSpeed = 0;
-            console.log('Spin complete!');
-        }
-    } else {
-        // Slow idle rotation
-        wheel.rotation.z += 0.005;
-    }
-    
-    renderer.render(scene, camera);
-}
+// Window resize
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  lighting.resize(window.innerWidth, window.innerHeight);
+});
 
-function spinWheel() {
-    console.log('Spinning wheel!');
-    isSpinning = true;
-    spinSpeed = 0.3; // Start with fast spin
-}
-
-// Start when page loads
-init();
+console.log('✅ Wheel initialized at localhost:8080');
