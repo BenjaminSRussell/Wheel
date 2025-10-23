@@ -1,17 +1,15 @@
 import * as THREE from 'three';
 
-// --- Constants for 3D wheel design ---
+// Wheel configuration
 const INNER_RADIUS = 2.5;
 const OUTER_RADIUS = 4;
-const WHEEL_DEPTH = 0.3;  // 3D thickness
+const WHEEL_DEPTH = 0.3;
 const SEGMENTS_INNER = 8;
 const SEGMENTS_OUTER = 12;
 
-// Vibrant carnival colors
 const COLORS_INNER = [0xff6347, 0x4682b4, 0x3cb371, 0xffd700, 0x9370db, 0xfa8072, 0x00ced1, 0xff4500];
 const COLORS_OUTER = [0xe6194b, 0x3cb44b, 0xffe119, 0x4363d8, 0xf58231, 0x911eb4, 0x46f0f0, 0xf032e6, 0xbcf60c, 0xfabebe, 0x008080, 0xe6beff];
 
-// Outcome labels for dual rings
 const OUTCOMES_INNER = ['Dance', 'Sing', 'Act', 'Draw', 'Jump', 'Spin', 'Laugh', 'Clap'];
 const OUTCOMES_OUTER = ['Movie', 'Music', 'Sports', 'Food', 'Travel', 'Games', 'Books', 'Art', 'Science', 'History', 'Nature', 'Tech'];
 
@@ -21,18 +19,27 @@ export class Wheel {
         this.wheelGroup = new THREE.Group();
         this.pointerGroup = new THREE.Group();
         this.ledLights = [];
+        this.isModelLoaded = false;
 
+        console.log('Creating carnival wheel...');
         this._createWheel();
         this._createLEDRim();
         this._createPointer();
+        console.log('Carnival wheel created successfully');
     }
 
-    /**
-     * Creates the 3D wheel with PBR materials
-     * @private
-     */
     _createWheel() {
-        // --- Outer Ring ---
+        // Create wheel segments
+        this._createWheelSegments();
+        
+        // Create center hub
+        this._createCenterHub();
+        
+        this.isModelLoaded = true;
+    }
+
+    _createWheelSegments() {
+        // Outer ring segments
         const outerSegmentAngle = (2 * Math.PI) / SEGMENTS_OUTER;
         for (let i = 0; i < SEGMENTS_OUTER; i++) {
             const startAngle = i * outerSegmentAngle;
@@ -48,14 +55,14 @@ export class Wheel {
             this.wheelGroup.add(segment);
         }
 
-        // --- Inner Ring ---
+        // Inner ring segments
         const innerSegmentAngle = (2 * Math.PI) / SEGMENTS_INNER;
         for (let i = 0; i < SEGMENTS_INNER; i++) {
             const startAngle = i * innerSegmentAngle;
             const endAngle = startAngle + innerSegmentAngle;
             const segment = this._createWedge3D(
                 INNER_RADIUS,
-                0.3,  // Small center hub
+                0.5,
                 startAngle,
                 endAngle,
                 COLORS_INNER[i],
@@ -63,29 +70,32 @@ export class Wheel {
             );
             this.wheelGroup.add(segment);
         }
+    }
 
-        // --- Center Hub (decorative) ---
-        const hubGeometry = new THREE.CylinderGeometry(0.3, 0.3, WHEEL_DEPTH, 32);
+    _createCenterHub() {
+        const hubGeometry = new THREE.CylinderGeometry(0.5, 0.5, WHEEL_DEPTH + 0.2, 32);
         hubGeometry.rotateX(Math.PI / 2);
-        const hubMaterial = new THREE.MeshStandardMaterial({
-            color: 0x222222,
-            metalness: 0.9,
-            roughness: 0.1,
-            emissive: 0x444444,
-            emissiveIntensity: 0.5
+        const hubMaterial = new THREE.MeshToonMaterial({
+            color: 0x2F1B14,
+            emissive: 0x1A0F0A,
+            emissiveIntensity: 0.3
         });
         const hub = new THREE.Mesh(hubGeometry, hubMaterial);
         this.wheelGroup.add(hub);
+
+        const centerGeometry = new THREE.SphereGeometry(0.2, 16, 16);
+        const centerMaterial = new THREE.MeshToonMaterial({
+            color: 0xFFD700,
+            emissive: 0xFFA500,
+            emissiveIntensity: 0.5
+        });
+        const center = new THREE.Mesh(centerGeometry, centerMaterial);
+        center.position.z = WHEEL_DEPTH / 2 + 0.1;
+        this.wheelGroup.add(center);
     }
 
-    /**
-     * Creates a single 3D wedge segment with PBR material
-     * @private
-     */
     _createWedge3D(radius, innerRadius, startAngle, endAngle, color, isEmissive = false) {
         const group = new THREE.Group();
-
-        // Create wedge shape for extrusion
         const shape = new THREE.Shape();
         const segments = 32;
 
@@ -101,7 +111,7 @@ export class Wheel {
             }
         }
 
-        // Inner arc (reverse)
+        // Inner arc
         for (let i = segments; i >= 0; i--) {
             const angle = startAngle + (endAngle - startAngle) * (i / segments);
             const x = Math.cos(angle) * innerRadius;
@@ -111,7 +121,6 @@ export class Wheel {
 
         shape.closePath();
 
-        // Extrude to create 3D geometry
         const extrudeSettings = {
             depth: WHEEL_DEPTH,
             bevelEnabled: true,
@@ -123,18 +132,16 @@ export class Wheel {
         const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
         geometry.center();
 
-        // Create PBR material
         const material = this.visualEffects
             ? this.visualEffects.createWheelMaterial(color, isEmissive)
-            : new THREE.MeshStandardMaterial({
+            : new THREE.MeshToonMaterial({
                 color,
-                metalness: 0.3,
-                roughness: 0.4,
+                transparent: false,
+                side: THREE.DoubleSide
             });
 
         const mesh = new THREE.Mesh(geometry, material);
 
-        // Add edge highlights
         const edgeGeometry = new THREE.EdgesGeometry(geometry, 15);
         const edgeMaterial = new THREE.LineBasicMaterial({
             color: 0x000000,
@@ -150,30 +157,24 @@ export class Wheel {
         return group;
     }
 
-    /**
-     * Create LED lights around the rim
-     * @private
-     */
     _createLEDRim() {
         const numLEDs = 48;
-        const ledRadius = OUTER_RADIUS + 0.2;
+        const ledRadius = OUTER_RADIUS + 0.3;
 
         for (let i = 0; i < numLEDs; i++) {
             const angle = (i / numLEDs) * Math.PI * 2;
+            const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff];
+            const color = colors[i % colors.length];
 
-            // Alternate LED colors for carnival feel
-            const color = i % 2 === 0 ? 0xff9900 : 0xff00ff;
-
-            // Create small LED sphere
             const ledGeometry = new THREE.SphereGeometry(0.08, 8, 8);
             const ledMaterial = this.visualEffects
                 ? this.visualEffects.createLEDMaterial(color)
-                : new THREE.MeshStandardMaterial({
+                : new THREE.MeshToonMaterial({
                     color,
                     emissive: new THREE.Color(color),
                     emissiveIntensity: 2.0,
-                    metalness: 0.7,
-                    roughness: 0.2
+                    transparent: true,
+                    opacity: 0.9
                 });
 
             const led = new THREE.Mesh(ledGeometry, ledMaterial);
@@ -188,14 +189,9 @@ export class Wheel {
         }
     }
 
-    /**
-     * Creates the 3D pointer arrow
-     * @private
-     */
     _createPointer() {
-        // Create arrow shape
         const arrowShape = new THREE.Shape();
-        const width = 0.25;
+        const width = 0.3;
         const length = 1.0;
         const baseY = OUTER_RADIUS + 0.3;
 
@@ -204,12 +200,11 @@ export class Wheel {
         arrowShape.lineTo(width, baseY);
         arrowShape.closePath();
 
-        // Extrude to 3D
         const extrudeSettings = {
-            depth: 0.2,
+            depth: 0.15,
             bevelEnabled: true,
-            bevelThickness: 0.05,
-            bevelSize: 0.05,
+            bevelThickness: 0.03,
+            bevelSize: 0.03,
             bevelSegments: 2
         };
 
@@ -217,19 +212,16 @@ export class Wheel {
         geometry.center();
         geometry.translate(0, baseY + length / 2, WHEEL_DEPTH / 2 + 0.2);
 
-        const material = new THREE.MeshStandardMaterial({
-            color: 0xffffff,
-            metalness: 0.8,
-            roughness: 0.2,
-            emissive: 0xffff00,
-            emissiveIntensity: 0.3
+        const material = new THREE.MeshToonMaterial({
+            color: 0xff0000,
+            emissive: 0xff4444,
+            emissiveIntensity: 0.6
         });
 
         const pointer = new THREE.Mesh(geometry, material);
 
-        // Add glow outline
         const edgeGeometry = new THREE.EdgesGeometry(geometry);
-        const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 3 });
+        const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 });
         const edges = new THREE.LineSegments(edgeGeometry, edgeMaterial);
 
         this.pointerGroup.add(pointer);
@@ -237,14 +229,8 @@ export class Wheel {
         this.pointerGroup.position.z = 0.1;
     }
 
-    /**
-     * Update LED animation
-     * @param {number} time - Current time for animation
-     * @param {boolean} isSpinning - Whether wheel is currently spinning
-     */
     updateLEDs(time, isSpinning = false) {
         this.ledLights.forEach((led, index) => {
-            // Animated pulsing effect
             const speed = isSpinning ? 10 : 3;
             const pulse = Math.sin(time * speed + led.phase * 0.5) * 0.5 + 0.5;
             const intensity = led.baseIntensity * (0.5 + pulse * 0.5);
@@ -255,40 +241,23 @@ export class Wheel {
         });
     }
 
-    /**
-     * Sets the rotation of the wheel
-     * @param {number} angle - The rotation angle in radians
-     */
     updateRotation(angle) {
         this.wheelGroup.rotation.z = angle;
+        console.log('Wheel rotation updated to:', angle);
     }
 
-    /**
-     * Calculates which segment is currently pointed at for a given ring
-     * @param {number} currentAngle - The current rotation of the wheel in radians
-     * @param {'inner' | 'outer'} ring - The ring to check
-     * @returns {number} The index of the segment
-     */
     getSegmentAtAngle(currentAngle, ring) {
         const numSegments = ring === 'inner' ? SEGMENTS_INNER : SEGMENTS_OUTER;
         const segmentAngle = (2 * Math.PI) / numSegments;
 
-        // Pointer is at 12 o'clock (PI/2)
         const pointerAngle = Math.PI / 2;
         const effectiveAngle = pointerAngle - (currentAngle % (2 * Math.PI));
-
-        // Normalize to [0, 2π]
         const normalizedAngle = (effectiveAngle % (2 * Math.PI) + (2 * Math.PI)) % (2 * Math.PI);
 
         const segmentIndex = Math.floor(normalizedAngle / segmentAngle) % numSegments;
         return segmentIndex;
     }
 
-    /**
-     * Gets the final winning segments for both rings with labels
-     * @param {number} finalAngle - The final rotation angle in radians
-     * @returns {{inner: {index: number, label: string}, outer: {index: number, label: string}}}
-     */
     getOutcomes(finalAngle) {
         const innerIndex = this.getSegmentAtAngle(finalAngle, 'inner');
         const outerIndex = this.getSegmentAtAngle(finalAngle, 'outer');
