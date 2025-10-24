@@ -1,154 +1,154 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎡 3D Carnival Wheel</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>2D Tech Choice Wheel</title>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background-color: #000;
-            font-family: 'Comic Sans MS', 'Chalkduster', cursive;
-        }
-        canvas {
-            display: block;
-        }
-        #spinButton {
-            position: absolute;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 20px 50px;
-            font-size: 32px;
-            font-family: 'Comic Sans MS', 'Chalkduster', cursive;
-            font-weight: bold;
-            color: white;
-            background: linear-gradient(145deg, #ff4757, #ff6348);
-            border: 6px solid #feca57;
-            border-radius: 25px;
-            cursor: pointer;
-            box-shadow: 0 8px 20px rgba(255, 71, 87, 0.4), 0 0 40px rgba(254, 202, 87, 0.3);
-            text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
-            transition: all 0.2s ease-in-out;
-            z-index: 1000;
-            animation: buttonPulse 2s infinite;
-        }
-        @keyframes buttonPulse {
-            0%, 100% {
-                box-shadow: 0 8px 20px rgba(255, 71, 87, 0.4), 0 0 40px rgba(254, 202, 87, 0.3);
-            }
-            50% {
-                box-shadow: 0 8px 30px rgba(255, 71, 87, 0.6), 0 0 60px rgba(254, 202, 87, 0.5);
-            }
-        }
-        #spinButton:hover {
-            background: linear-gradient(145deg, #ff6b81, #ff8566);
-            transform: translateX(-50%) scale(1.05);
-            box-shadow: 0 10px 30px rgba(255, 71, 87, 0.6), 0 0 50px rgba(254, 202, 87, 0.5);
-        }
-        #spinButton:active {
-            transform: translateX(-50%) scale(0.98);
-            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4), 0 0 30px rgba(254, 202, 87, 0.3);
-        }
-        #spinButton:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            animation: none;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: #0a0a0a;
+        font-family: 'Comic Sans MS', Arial, sans-serif;
+        height: 100vh;
+        position: relative;
+      }
+      canvas {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+      }
+      #spinButton {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 20px 50px;
+        font-size: 28px;
+        font-weight: 900;
+        color: #fff;
+        background: linear-gradient(
+          45deg,
+          #ff6b6b,
+          #4ecdc4,
+          #45b7d1,
+          #96ceb4,
+          #feca57,
+          #ff9ff3,
+          #54a0ff,
+          #5f27cd
+        );
+        background-size: 400% 400%;
+        border: 6px solid #fff;
+        border-radius: 40px;
+        cursor: pointer;
+        box-shadow:
+          0 15px 35px rgba(0, 0, 0, 0.3),
+          0 5px 15px rgba(0, 0, 0, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        z-index: 9999;
+        display: block;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        animation:
+          gradientShift 3s ease infinite,
+          pulse 2s ease-in-out infinite;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: visible;
+        min-width: 250px;
+        max-width: 90vw;
+        white-space: nowrap;
+      }
 
-        /* Loading Screen */
-        #loadingScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a14 50%, #0a0a1a 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease-out;
+      #spinButton::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        transition: left 0.5s;
+      }
+
+      #spinButton:hover:not(:disabled)::before {
+        left: 100%;
+      }
+
+      #spinButton:hover:not(:disabled) {
+        transform: translateX(-50%) scale(1.1) rotate(2deg);
+        box-shadow:
+          0 20px 40px rgba(0, 0, 0, 0.4),
+          0 10px 20px rgba(0, 0, 0, 0.3),
+          inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        animation-duration: 1s, 1s;
+      }
+
+      #spinButton:active:not(:disabled) {
+        transform: translateX(-50%) scale(0.95);
+        box-shadow:
+          0 5px 15px rgba(0, 0, 0, 0.3),
+          inset 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      #spinButton:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        animation: none;
+        transform: translateX(-50%) scale(0.9);
+      }
+
+      @keyframes gradientShift {
+        0% {
+          background-position: 0% 50%;
         }
-        #loadingScreen.hidden {
-            opacity: 0;
-            pointer-events: none;
+        50% {
+          background-position: 100% 50%;
         }
-        .loading-wheel {
-            width: 120px;
-            height: 120px;
-            border: 8px solid rgba(255, 215, 0, 0.2);
-            border-top: 8px solid #ffd700;
-            border-radius: 50%;
-            animation: spin 1s linear infinite, glow 2s ease-in-out infinite;
-            margin-bottom: 30px;
+        100% {
+          background-position: 0% 50%;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          box-shadow:
+            0 15px 35px rgba(0, 0, 0, 0.3),
+            0 5px 15px rgba(0, 0, 0, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3),
+            0 0 20px rgba(255, 107, 107, 0.5);
         }
-        @keyframes glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
-            50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 99, 71, 0.4); }
+        50% {
+          box-shadow:
+            0 15px 35px rgba(0, 0, 0, 0.3),
+            0 5px 15px rgba(0, 0, 0, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3),
+            0 0 40px rgba(78, 205, 196, 0.8);
         }
-        .loading-text {
-            font-size: 28px;
-            color: #ffd700;
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5), 2px 2px 4px rgba(0, 0, 0, 0.8);
-            margin-bottom: 20px;
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        .loading-bar-container {
-            width: 300px;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            overflow: hidden;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-        }
-        .loading-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #ffd700, #ff6347, #ff00ff);
-            background-size: 200% 100%;
-            animation: shimmer 2s linear infinite;
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-        .loading-status {
-            font-size: 14px;
-            color: #ff9900;
-            font-style: italic;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <canvas id="c"></canvas>
-    <button id="spinButton">SPIN!</button>
+    <button id="spinButton">CHOOSE YOUR TECH!</button>
 
     <script type="importmap">
-        {
-            "imports": {
-                "three": "./node_modules/three/build/three.module.js",
-                "three.quarks": "./node_modules/three.quarks/dist/three.quarks.esm.js",
-                "@dimforge/rapier3d-compat": "./node_modules/@dimforge/rapier3d-compat/rapier.es.js",
-                "postprocessing": "./node_modules/postprocessing/build/index.js"
-            }
+      {
+        "imports": {
+          "three": "./node_modules/three/build/three.module.js",
+          "postprocessing": "./node_modules/postprocessing/build/postprocessing.js"
         }
+      }
     </script>
 
     <script type="module" src="/src/main.js"></script>
-</body>
+  </body>
 </html>

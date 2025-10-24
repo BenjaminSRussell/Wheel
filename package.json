@@ -1,24 +1,26 @@
 {
-  "name": "3d-carnival-wheel",
+  "name": "2d-tech-wheel",
   "version": "1.0.0",
-  "description": "Immersive 3D Carnival Wheel with PBR materials, Rapier physics, and bloom effects",
+  "description": "2D spinning wheel rendered with Three.js and physics-based controller",
   "main": "src/main.js",
   "type": "module",
   "scripts": {
     "start": "live-server --port=8080 --host=127.0.0.1",
     "dev": "live-server --port=8080 --host=127.0.0.1 --open",
-    "test": "live-server --port=8080 --host=127.0.0.1 --open=diagnostic.html"
+    "lint": "eslint \"src/**/*.js\"",
+    "lint:fix": "eslint \"src/**/*.js\" --fix",
+    "lint:ci": "eslint \"src/**/*.js\" --max-warnings=0 --report-unused-disable-directives",
+    "format": "prettier --write \"**/*.{js,json,html,css,md,yml,yaml}\" --config config/.prettierrc.json",
+    "format:check": "prettier --check \"**/*.{js,json,html,css,md,yml,yaml}\" --config config/.prettierrc.json",
+    "audit:ci": "npm audit --omit dev --audit-level=moderate",
+    "check:quality": "npm run lint:ci && npm run format:check && npm run audit:ci"
   },
   "keywords": [
     "three.js",
     "webgl",
-    "3d",
-    "carnival",
+    "2d",
     "wheel",
-    "physics",
-    "rapier",
-    "pbr",
-    "bloom"
+    "physics"
   ],
   "author": "Benjamin Russell",
   "license": "MIT",
@@ -28,11 +30,21 @@
   },
   "dependencies": {
     "three": "0.170.0",
-    "three.quarks": "0.12.3",
-    "@dimforge/rapier3d-compat": "0.14.0",
     "postprocessing": "6.36.4"
   },
   "devDependencies": {
-    "live-server": "1.2.2"
+    "@eslint/js": "^9.38.0",
+    "eslint": "^9.38.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-eslint-comments": "^3.2.0",
+    "eslint-plugin-import-x": "^4.16.1",
+    "eslint-plugin-perfectionist": "^4.15.1",
+    "eslint-plugin-promise": "^7.2.1",
+    "eslint-plugin-security": "^3.0.1",
+    "eslint-plugin-sonarjs": "^3.0.5",
+    "eslint-plugin-unicorn": "^61.0.2",
+    "globals": "^16.4.0",
+    "live-server": "1.2.2",
+    "prettier": "^3.6.2"
   }
 }
