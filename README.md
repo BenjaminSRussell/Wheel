@@ -1,37 +1,62 @@
-# 3D Carnival Spinning Wheel
+# 2D Tech Wheel
 
-> A vibrant, customizable, and feature-rich 3D spinning wheel built with Three.js and a physics-based spin controller. Designed to bring a fun, cartoonish, and high-quality interactive experience to the web.
+> A modern, customizable 2D spinning wheel built with Three.js and a physics-based spin controller. Features tech-themed segments with smooth animations, LED effects, and confetti celebrations.
 
-![Spinning Wheel Demo](https://i.imgur.com/your-demo-gif.gif)
+![Spinning Wheel Demo](./visual.png)
 
 ---
 
 ## Features
 
-- **Dual-Ring Design**: Two independent rings for combined outcomes (e.g., "Sing" + "a Pop Song").
-- **Physics-Based Spinning**: Uses a custom spin controller for a realistic and satisfying spinning motion.
-- **PBR Materials**: Physically Based Rendering for high-quality, realistic materials with reflections and lighting.
-- **Dynamic Effects**:
-  - **Confetti Burst** on spin start.
-  - **Motion Lines** and **Camera Shake** as the wheel slows down.
-  - **Flashing Corner Lights** when the wheel stops.
-  - **Animated LED Rim** with pulsing lights.
-- **Audio Management**:
-  - Background music that fades between idle and spinning states.
-  - Sound effects for spin start and winning.
-- **Customizable**: Easily change the outcomes, colors, and number of segments on each wheel.
-- **Fullscreen Mode**: Kiosk mode support for an immersive experience.
-- **Outcome Display**: A clean, animated display shows the winning combination.
+- **Tech-Themed Segments**: 8 programming languages and technologies (JavaScript, Python, TypeScript, React, Node.js, Go, Rust, Swift)
+- **Physics-Based Spinning**: Custom spin controller with realistic deceleration and momentum
+- **LED Rim Effects**: Animated LED lights around the wheel perimeter with pulsing colors
+- **Confetti System**: Particle-based confetti celebration when the wheel stops
+- **Smooth Animations**: 60fps rendering with optimized Three.js performance
+- **Responsive Design**: Adapts to different screen sizes and orientations
+- **Customizable**: Easy to modify segments, colors, and wheel configuration
+- **Modern Architecture**: Clean ES6+ modules with separation of concerns
 
 ---
 
 ## Technologies Used
 
-- **Graphics**: [Three.js](https://threejs.org/)
-- **Particle Effects**: [Three.quarks](https://github.com/Alchemist0823/three.quarks)
-- **Post-Processing**: [postprocessing](https://github.com/vanruesc/postprocessing)
-- **Physics**: Custom physics-based controller
-- **Module Bundling**: Native ES Modules with `importmap`
+- **Graphics**: [Three.js](https://threejs.org/) - 3D graphics library for WebGL
+- **Physics**: Custom physics-based spin controller with realistic deceleration
+- **Particle Effects**: Custom confetti system using Three.js geometries
+- **Module System**: Native ES6 modules with modern import/export syntax
+- **Code Quality**: ESLint with modern rules, Prettier for formatting
+
+---
+
+## Code Architecture
+
+```mermaid
+graph TD
+    A[main.js] --> B[Wheel Component]
+    A --> C[SpinController]
+    A --> D[ConfettiSystem]
+
+    B --> E[Three.js Scene]
+    B --> F[Wheel Geometry]
+    B --> G[LED Lights]
+    B --> H[Pointer]
+
+    C --> I[Physics Engine]
+    C --> J[Animation Loop]
+
+    D --> K[Particle System]
+    D --> L[Confetti Particles]
+
+    E --> M[WebGL Renderer]
+    F --> N[Segment Colors]
+    F --> O[Tech Labels]
+
+    style A fill:#e1f5fe
+    style B fill:#f3e5f5
+    style C fill:#e8f5e8
+    style D fill:#fff3e0
+```
 
 ---
 
@@ -39,33 +64,38 @@
 
 ### Prerequisites
 
-- A modern web browser that supports WebGL and ES Modules.
-- A local web server to serve the files. The `live-server` VS Code extension or `npx http-server` are great options.
+- Node.js 18.0.0 or higher
+- A modern web browser that supports WebGL and ES Modules
 
 ### Installation
 
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/your-username/wheel-spin.git
-   cd wheel-spin
+   git clone https://github.com/your-username/2d-tech-wheel.git
+   cd 2d-tech-wheel
    ```
 
 2. **Install dependencies:**
-   This project uses `npm` to manage the required JavaScript libraries.
    ```bash
    npm install
    ```
 
 ### Running the Project
 
-1. **Start a local server** in the project's root directory. For example:
+1. **Start the development server:**
 
    ```bash
-   npx http-server .
+   npm run dev
    ```
 
-2. **Open your browser** and navigate to the local server's address (e.g., `http://localhost:8080`).
+   This will start a live server on `http://127.0.0.1:8080` and automatically open your browser.
+
+2. **Alternative - Manual server:**
+   ```bash
+   npm start
+   ```
+   Then manually navigate to `http://127.0.0.1:8080` in your browser.
 
 ---
 
@@ -84,34 +114,59 @@ These commands execute in CI for Node 18 and Node 20 to guarantee cross-version 
 
 ## How to Customize
 
-Customizing the wheel is easy! All the main configuration is located in `src/Wheel.js`.
+Customizing the wheel is easy! All the main configuration is located in `src/components/Wheel.js`.
 
-### Changing Wheel Segments (Outcomes and Colors)
+### Changing Wheel Segments (Tech Labels and Colors)
 
-1. **Open `src/Wheel.js`**.
-2. Find the following constant arrays at the top of the file:
+1. **Open `src/components/Wheel.js`**.
+2. Find the `segments` array in the constructor configuration:
 
    ```javascript
-   // Inner Ring
-   const SEGMENTS_INNER = 8;
-   const COLORS_INNER = [0xff6347, 0x4682b4, ...];
-   const OUTCOMES_INNER = ['Dance', 'Sing', ...];
-
-   // Outer Ring
-   const SEGMENTS_OUTER = 12;
-   const COLORS_OUTER = [0xe6194b, 0x3cb44b, ...];
-   const OUTCOMES_OUTER = ['Movie', 'Music', ...];
+   segments: [
+     { label: 'JavaScript', color: 0x3498db },
+     { label: 'Python', color: 0x2ecc71 },
+     { label: 'TypeScript', color: 0x9b59b6 },
+     { label: 'React', color: 0xe74c3c },
+     { label: 'Node.js', color: 0x1abc9c },
+     { label: 'Go', color: 0x34495e },
+     { label: 'Rust', color: 0xf39c12 },
+     { label: 'Swift', color: 0x27ae60 },
+   ];
    ```
 
-3. **To change the outcomes**, simply edit the `OUTCOMES_INNER` and `OUTCOMES_OUTER` arrays.
-4. **To change the colors**, edit the `COLORS_INNER` and `COLORS_OUTER` arrays. The colors are hex values.
-5. **To change the number of segments**, update the `SEGMENTS_INNER` or `SEGMENTS_OUTER` constants. Make sure the number of items in the corresponding `COLORS` and `OUTCOMES` arrays matches the segment count!
+3. **To change the tech labels**, edit the `label` property of each segment object.
+4. **To change the colors**, edit the `color` property using hex values (e.g., `0x3498db` for blue).
+5. **To add/remove segments**, simply add or remove objects from the array. The wheel will automatically adjust to the new number of segments.
+
+### Customizing LED Effects
+
+You can modify the LED rim effects by changing these properties in the Wheel constructor:
+
+```javascript
+ledCount: 16,           // Number of LED lights
+ledRadius: 3.7,         // Distance from center
+ledSize: 0.08,          // Size of each LED
+ledColors: [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff]
+```
 
 ---
 
+## Project Structure
+
+```
+src/
+├── main.js                 # Entry point and scene setup
+├── components/
+│   └── Wheel.js           # Main wheel component with segments and LEDs
+├── controllers/
+│   └── SpinController.js  # Physics-based spinning logic
+└── effects/
+    └── ConfettiSystem.js  # Particle system for celebrations
+```
+
 ## Contributing
 
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/your-username/wheel-spin/issues).
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/your-username/2d-tech-wheel/issues).
 
 ---
 
