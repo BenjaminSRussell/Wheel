@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 
-// 2D wheel component rendered as flat geometry in Three.js
 export class Wheel {
   constructor(scene, config = {}) {
     this.scene = scene;
@@ -9,31 +8,30 @@ export class Wheel {
 
     this.config = {
       segments: [
-        { label: 'JavaScript', color: 0x3498db },
-        { label: 'Python', color: 0x2ecc71 },
-        { label: 'TypeScript', color: 0x9b59b6 },
-        { label: 'React', color: 0xe74c3c },
-        { label: 'Node.js', color: 0x1abc9c },
-        { label: 'Go', color: 0x34495e },
-        { label: 'Rust', color: 0xf39c12 },
-        { label: 'Swift', color: 0x27ae60 },
+        { label: 'Vampire', color: 0x8B0000 },
+        { label: 'Witch', color: 0x4B0082 },
+        { label: 'Ghost', color: 0x708090 },
+        { label: 'Zombie', color: 0x556B2F },
+        { label: 'Pumpkin', color: 0xFF8C00 },
+        { label: 'Skeleton', color: 0xF5F5DC },
+        { label: 'Frankenstein', color: 0x228B22 },
+        { label: 'Werewolf', color: 0x2F4F4F },
       ],
       innerRadius: 0.0,
       outerRadius: 3.6,
       ledCount: 16,
       ledRadius: 3.7,
       ledSize: 0.08,
-      ledColors: [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff],
+      ledColors: [0xff0000, 0x00ff00, 0x0000ff, 0xffff00],
       pointerLength: 1.0,
       pointerWidth: 0.4,
-      pointerColor: 0xff0000,
-      pointerPosition: { x: 0, y: 3.8, z: 0.5 },
+      pointerColor: 0xFF4500,
+      pointerPosition: { x: 0, y: 4.0, z: 0.5 },
       ...config,
     };
 
     this._calculateSegmentBoundaries();
     this._buildWheel();
-    this._buildSegmentPins();
     this._buildLEDs();
     this._buildPointer();
     this.scene.add(this.wheelGroup);
@@ -62,27 +60,6 @@ export class Wheel {
     });
   }
 
-  _buildSegmentPins() {
-    this.segments.forEach((segment) => {
-      const pinGeometry = new THREE.CylinderGeometry(0.02, 0.02, this.config.outerRadius, 8);
-      const pinMaterial = new THREE.MeshLambertMaterial({
-        color: 0xffd700,
-        emissive: new THREE.Color(0xffd700).multiplyScalar(0.1),
-      });
-
-      const pin = new THREE.Mesh(pinGeometry, pinMaterial);
-      const pinRadius = this.config.outerRadius / 2;
-
-      pin.position.set(
-        Math.cos(segment.endRad) * pinRadius,
-        Math.sin(segment.endRad) * pinRadius,
-        0.05,
-      );
-      pin.rotation.z = segment.endRad + Math.PI / 2;
-
-      this.wheelGroup.add(pin);
-    });
-  }
 
   _createSegment(innerRadius, outerRadius, startAngle, endAngle, color, label) {
     const shape = new THREE.Shape();
@@ -123,11 +100,11 @@ export class Wheel {
     canvas.width = 512;
     canvas.height = 128;
 
-    context.font = 'bold 48px Arial';
+    context.font = 'bold 72px "Playfair Display", "Times New Roman", serif';
     context.textAlign = 'center';
     context.textBaseline = 'middle';
     context.strokeStyle = '#000000';
-    context.lineWidth = 4;
+    context.lineWidth = 6;
     context.strokeText(text, canvas.width / 2, canvas.height / 2);
     context.fillStyle = '#FFFFFF';
     context.fillText(text, canvas.width / 2, canvas.height / 2);
@@ -139,9 +116,9 @@ export class Wheel {
     );
 
     const midAngle = (startAngle + endAngle) / 2;
-    const midRadius = outerRadius / 2;
-    sprite.position.set(Math.cos(midAngle) * midRadius, Math.sin(midAngle) * midRadius, 0.1);
-    sprite.scale.set(1.5, 0.4, 1);
+    const labelRadius = outerRadius * 0.8;
+    sprite.position.set(Math.cos(midAngle) * labelRadius, Math.sin(midAngle) * labelRadius, 0.1);
+    sprite.scale.set(2.0, 0.6, 1);
     sprite.rotation.z = midAngle + Math.PI / 2;
 
     group.add(sprite);
@@ -164,20 +141,8 @@ export class Wheel {
       const led = new THREE.Mesh(geometry, material);
       led.position.set(Math.cos(angle) * ledRadius, Math.sin(angle) * ledRadius, 0.1);
 
-      const glowGeometry = new THREE.RingGeometry(ledSize * 1.5, ledSize * 2, 16);
-      const glowMaterial = new THREE.MeshBasicMaterial({
-        color: color,
-        transparent: true,
-        opacity: 0.3,
-        side: THREE.DoubleSide,
-      });
-      const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-      glow.position.set(Math.cos(angle) * ledRadius, Math.sin(angle) * ledRadius, 0.05);
-      glow.rotation.z = angle;
-
       this.wheelGroup.add(led);
-      this.wheelGroup.add(glow);
-      this.ledLights.push({ mesh: led, glow: glow, phase: i, angle });
+      this.ledLights.push({ mesh: led, phase: i, angle });
     }
   }
 
@@ -219,7 +184,6 @@ export class Wheel {
       const intensity = 0.8 * (0.5 + pulse * 0.5);
 
       led.mesh.material.emissiveIntensity = intensity;
-      if (led.glow) led.glow.material.opacity = 0.3 * (0.5 + pulse * 0.5);
 
       const hue = (time * 0.5 + led.phase * 0.1) % 1;
       const color = new THREE.Color().setHSL(hue, 1, 0.5);

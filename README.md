@@ -31,22 +31,38 @@
 
 ## Code Architecture
 
+The project follows a modular architecture with clear separation of concerns:
+
 ```mermaid
 graph TD
     A[main.js] --> B[Wheel Component]
     A --> C[SpinController]
     A --> D[ConfettiSystem]
+    A --> E[Scene Config]
 
-    B --> E[Three.js Scene]
     B --> F[Wheel Geometry]
     B --> G[LED Lights]
     B --> H[Pointer]
+    B --> I[Text Labels]
 
-    C --> I[Physics Engine]
-    C --> J[Animation Loop]
+    C --> J[Physics Engine]
+    C --> K[Animation Loop]
 
-    D --> K[Particle System]
-    D --> L[Confetti Particles]
+    D --> L[Particle System]
+    D --> M[Confetti Particles]
+
+    N[Utils] --> O[Crypto Utils]
+    N --> P[Math Utils]
+    
+    Q[Config] --> R[Constants]
+    Q --> S[Wheel Config]
+    Q --> T[Physics Config]
+    Q --> U[Scene Config]
+
+    B --> N
+    C --> N
+    D --> N
+    A --> Q
 
     E --> M[WebGL Renderer]
     F --> N[Segment Colors]
@@ -147,6 +163,49 @@ ledCount: 16,           // Number of LED lights
 ledRadius: 3.7,         // Distance from center
 ledSize: 0.08,          // Size of each LED
 ledColors: [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff]
+```
+
+---
+
+## Code Consolidation & Improvements
+
+The codebase has been recently consolidated and optimized for better maintainability:
+
+### **Shared Utilities**
+- **Crypto Utils** (`src/utils/crypto.js`): Centralized secure random number generation
+- **Math Utils** (`src/utils/math.js`): Common mathematical functions and constants
+- **Consolidated Exports** (`src/utils/index.js`): Single import point for all utilities
+
+### **Configuration Management**
+- **Constants** (`src/config/constants.js`): All configuration values centralized
+- **Wheel Config**: Segment definitions, colors, and geometry settings
+- **Physics Config**: Spin controller parameters and thresholds
+- **Scene Config**: Three.js scene, lighting, and camera settings
+- **Effects Config**: Confetti and LED animation parameters
+
+### **Benefits**
+- **DRY Principle**: Eliminated duplicate code across components
+- **Maintainability**: Single source of truth for all configuration
+- **Type Safety**: Consistent parameter usage across the application
+- **Performance**: Optimized imports and reduced bundle size
+- **Extensibility**: Easy to add new features or modify existing ones
+
+### **New File Structure**
+```
+src/
+├── components/          # UI components
+│   └── Wheel.js        # Main wheel component
+├── controllers/         # Business logic
+│   └── SpinController.js # Physics and spin logic
+├── effects/            # Visual effects
+│   └── ConfettiSystem.js # Particle effects
+├── utils/              # Shared utilities
+│   ├── crypto.js       # Cryptographic functions
+│   ├── math.js         # Mathematical utilities
+│   └── index.js        # Consolidated exports
+├── config/             # Configuration
+│   └── constants.js    # All app constants
+└── main.js             # Application entry point
 ```
 
 ---
