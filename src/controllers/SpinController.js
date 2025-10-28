@@ -1,11 +1,11 @@
-import { PHYSICS_CONFIG } from '../config/constants.js';
+import { PHYSICS_CONFIG } from '../config/appConfig.js';
 import { cryptoRandomFloat } from '../utils/crypto.js';
 import { TWO_PI, normalizeAngleRad, degToRad, radToDeg } from '../utils/math.js';
 
 export class SpinController {
   constructor({ initialAngle = 0, friction = PHYSICS_CONFIG.friction } = {}) {
-    this.friction = friction;
-    this.currentAngle = initialAngle;
+    this.friction = Math.max(0, Math.min(1, friction));
+    this.currentAngle = Number.isFinite(initialAngle) ? initialAngle : 0;
     this.angularVelocity = 0;
 
     this.isSpinning = false;
@@ -36,21 +36,23 @@ export class SpinController {
       deltaToTarget += TWO_PI;
     }
 
-    const extraTurns = PHYSICS_CONFIG.minTurns + Math.floor(cryptoRandomFloat() * (PHYSICS_CONFIG.maxTurns - PHYSICS_CONFIG.minTurns));
+    const { minTurns, maxTurns } = PHYSICS_CONFIG;
+    const extraTurns = minTurns + Math.floor(cryptoRandomFloat() * (maxTurns - minTurns));
     this._totalRotationNeeded = deltaToTarget + extraTurns * TWO_PI;
     this._targetAngleAbsolute = this.currentAngle + this._totalRotationNeeded;
 
     this._rotationAccumulated = 0;
     this._finalAngleDeg = finalAngleDeg;
     this.angularVelocity = initialVelocity;
-    this._maxVelocity = PHYSICS_CONFIG.maxVelocityMin + cryptoRandomFloat() * (PHYSICS_CONFIG.maxVelocityMax - PHYSICS_CONFIG.maxVelocityMin);
+    this._maxVelocity =
+      PHYSICS_CONFIG.maxVelocityMin +
+      cryptoRandomFloat() * (PHYSICS_CONFIG.maxVelocityMax - PHYSICS_CONFIG.maxVelocityMin);
     this._accelerationPhase = true;
     this.isSpinning = true;
     this._onComplete = typeof onComplete === 'function' ? onComplete : null;
 
     if (this._rafId !== null) {
       cancelAnimationFrame(this._rafId);
-      this._rafId = null;
     }
     this._rafId = requestAnimationFrame(this._boundTick);
     return true;
@@ -108,6 +110,9 @@ export class SpinController {
   }
 
   _randomInitialVelocity() {
-    return PHYSICS_CONFIG.initialVelocityMin + cryptoRandomFloat() * (PHYSICS_CONFIG.initialVelocityMax - PHYSICS_CONFIG.initialVelocityMin);
+    return (
+      PHYSICS_CONFIG.initialVelocityMin +
+      cryptoRandomFloat() * (PHYSICS_CONFIG.initialVelocityMax - PHYSICS_CONFIG.initialVelocityMin)
+    );
   }
 }

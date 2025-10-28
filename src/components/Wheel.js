@@ -1,32 +1,19 @@
 import * as THREE from 'three';
 
+import { APP_CONFIG, WHEEL_CONFIG } from '../config/appConfig.js';
+
 export class Wheel {
   constructor(scene, config = {}) {
+    if (!scene) {
+      throw new Error('Scene is required');
+    }
+
     this.scene = scene;
     this.wheelGroup = new THREE.Group();
     this.ledLights = [];
 
     this.config = {
-      segments: [
-        { label: 'Vampire', color: 0x8B0000 },
-        { label: 'Witch', color: 0x4B0082 },
-        { label: 'Ghost', color: 0x708090 },
-        { label: 'Zombie', color: 0x556B2F },
-        { label: 'Pumpkin', color: 0xFF8C00 },
-        { label: 'Skeleton', color: 0xF5F5DC },
-        { label: 'Frankenstein', color: 0x228B22 },
-        { label: 'Werewolf', color: 0x2F4F4F },
-      ],
-      innerRadius: 0.0,
-      outerRadius: 3.6,
-      ledCount: 16,
-      ledRadius: 3.7,
-      ledSize: 0.08,
-      ledColors: [0xff0000, 0x00ff00, 0x0000ff, 0xffff00],
-      pointerLength: 1.0,
-      pointerWidth: 0.4,
-      pointerColor: 0xFF4500,
-      pointerPosition: { x: 0, y: 4.0, z: 0.5 },
+      ...WHEEL_CONFIG,
       ...config,
     };
 
@@ -59,7 +46,6 @@ export class Wheel {
       this.wheelGroup.add(segmentMesh);
     });
   }
-
 
   _createSegment(innerRadius, outerRadius, startAngle, endAngle, color, label) {
     const shape = new THREE.Shape();
@@ -97,14 +83,14 @@ export class Wheel {
   _addTextLabel(group, text, startAngle, endAngle, innerRadius, outerRadius) {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
-    canvas.width = 512;
-    canvas.height = 128;
+    canvas.width = 256;
+    canvas.height = 64;
 
-    context.font = 'bold 72px "Playfair Display", "Times New Roman", serif';
+    context.font = 'bold 36px "Playfair Display", "Times New Roman", serif';
     context.textAlign = 'center';
     context.textBaseline = 'middle';
     context.strokeStyle = '#000000';
-    context.lineWidth = 6;
+    context.lineWidth = 3;
     context.strokeText(text, canvas.width / 2, canvas.height / 2);
     context.fillStyle = '#FFFFFF';
     context.fillText(text, canvas.width / 2, canvas.height / 2);
@@ -118,7 +104,7 @@ export class Wheel {
     const midAngle = (startAngle + endAngle) / 2;
     const labelRadius = outerRadius * 0.8;
     sprite.position.set(Math.cos(midAngle) * labelRadius, Math.sin(midAngle) * labelRadius, 0.1);
-    sprite.scale.set(2.0, 0.6, 1);
+    sprite.scale.set(1.0, 0.3, 1);
     sprite.rotation.z = midAngle + Math.PI / 2;
 
     group.add(sprite);
@@ -179,13 +165,18 @@ export class Wheel {
   }
 
   updateLEDs(time) {
+    const { ledPulseSpeed, ledIntensityBase } = APP_CONFIG.animation;
+    const pulseFactor = 0.5;
+    const colorShiftSpeed = 0.5;
+    const phaseFactor = 0.1;
+
     this.ledLights.forEach((led) => {
-      const pulse = Math.sin(time * 3.0 + led.phase) * 0.5 + 0.5;
-      const intensity = 0.8 * (0.5 + pulse * 0.5);
+      const pulse = Math.sin(time * ledPulseSpeed + led.phase) * pulseFactor + pulseFactor;
+      const intensity = ledIntensityBase * (pulseFactor + pulse * pulseFactor);
 
       led.mesh.material.emissiveIntensity = intensity;
 
-      const hue = (time * 0.5 + led.phase * 0.1) % 1;
+      const hue = (time * colorShiftSpeed + led.phase * phaseFactor) % 1;
       const color = new THREE.Color().setHSL(hue, 1, 0.5);
       led.mesh.material.color = color;
       led.mesh.material.emissive = color;
@@ -195,26 +186,23 @@ export class Wheel {
   getCurrentSegment() {
     const pointerAngle = -Math.PI / 2;
     const wheelAngle = this.wheelGroup.rotation.z;
+    const twoPi = 2 * Math.PI;
 
     for (const [index, segment] of this.segments.entries()) {
-      const startAngle =
-        (((segment.startRad + wheelAngle) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
-      const endAngle =
-        (((segment.endRad + wheelAngle) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+      const startAngle = ((segment.startRad + wheelAngle) % twoPi + twoPi) % twoPi;
+      const endAngle = ((segment.endRad + wheelAngle) % twoPi + twoPi) % twoPi;
 
-      let isInSegment = false;
-      if (startAngle <= endAngle) {
-        isInSegment = pointerAngle >= startAngle && pointerAngle < endAngle;
-      } else {
-        isInSegment = pointerAngle >= startAngle || pointerAngle < endAngle;
-      }
+      const isInSegment =
+        startAngle <= endAngle
+          ? pointerAngle >= startAngle && pointerAngle < endAngle
+          : pointerAngle >= startAngle || pointerAngle < endAngle;
 
       if (isInSegment) {
         return {
           index,
           label: segment.label,
-          wheelAngle: wheelAngle,
-          pointerAngle: pointerAngle,
+          wheelAngle,
+          pointerAngle,
           segmentStart: startAngle,
           segmentEnd: endAngle,
         };
@@ -223,9 +211,9 @@ export class Wheel {
 
     return {
       index: 0,
-      label: this.segments[0].label,
-      wheelAngle: wheelAngle,
-      pointerAngle: pointerAngle,
+      label: this.segments[0]?.label ?? 'Unknown',
+      wheelAngle,
+      pointerAngle,
       segmentStart: 0,
       segmentEnd: Math.PI / 4,
     };

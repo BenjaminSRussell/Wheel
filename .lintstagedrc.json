@@ -1,0 +1,13 @@
+{
+  "src/**/*.js": [
+    "eslint --fix",
+    "prettier --write"
+  ],
+  "*.{json,html,css,md,yml,yaml}": [
+    "prettier --write"
+  ],
+  "src/**/*.test.js": [
+    "jest --bail --findRelatedTests"
+  ]
+}
+

@@ -53,7 +53,7 @@ graph TD
 
     N[Utils] --> O[Crypto Utils]
     N --> P[Math Utils]
-    
+
     Q[Config] --> R[Constants]
     Q --> S[Wheel Config]
     Q --> T[Physics Config]
@@ -121,10 +121,39 @@ The project ships with automated quality tooling to keep the codebase consistent
 
 - `npm run lint:ci` — ESLint (flat config) with modern rules from Unicorn, SonarJS, Security, Import-X, and more, failing on any warning.
 - `npm run format:check` — Prettier validation across JS/JSON/HTML/CSS/Markdown/YAML files.
+- `npm run test:ci` — Run Jest tests with coverage in CI mode.
 - `npm run audit:ci` — `npm audit --omit dev --audit-level=moderate` to surface vulnerable runtime dependencies.
 - `npm run check:quality` — Convenience task that runs all of the above sequentially.
 
+### Pre-commit Hooks
+
+The project uses Husky and lint-staged to automatically run quality checks before each commit:
+- ESLint with auto-fix on staged JavaScript files
+- Prettier formatting on all staged files
+- Jest tests for changed test files
+
+Install hooks after cloning: `npm install` (runs `npm run prepare` automatically)
+
 These commands execute in CI for Node 18 and Node 20 to guarantee cross-version compatibility.
+
+---
+
+## Testing
+
+The project includes comprehensive unit tests using Jest:
+
+```bash
+npm test          # Run tests with coverage
+npm run test:watch # Run tests in watch mode
+npm run test:ci   # Run tests in CI mode
+```
+
+Tests cover:
+- Utility functions (crypto, math helpers)
+- Spin controller physics logic
+- Repository-level anti-pattern detection (no emojis, no empty catch blocks)
+
+Test files are located alongside their source code in `__tests__` directories.
 
 ---
 
@@ -172,11 +201,13 @@ ledColors: [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff]
 The codebase has been recently consolidated and optimized for better maintainability:
 
 ### **Shared Utilities**
+
 - **Crypto Utils** (`src/utils/crypto.js`): Centralized secure random number generation
 - **Math Utils** (`src/utils/math.js`): Common mathematical functions and constants
 - **Consolidated Exports** (`src/utils/index.js`): Single import point for all utilities
 
 ### **Configuration Management**
+
 - **Constants** (`src/config/constants.js`): All configuration values centralized
 - **Wheel Config**: Segment definitions, colors, and geometry settings
 - **Physics Config**: Spin controller parameters and thresholds
@@ -184,6 +215,7 @@ The codebase has been recently consolidated and optimized for better maintainabi
 - **Effects Config**: Confetti and LED animation parameters
 
 ### **Benefits**
+
 - **DRY Principle**: Eliminated duplicate code across components
 - **Maintainability**: Single source of truth for all configuration
 - **Type Safety**: Consistent parameter usage across the application
@@ -191,6 +223,7 @@ The codebase has been recently consolidated and optimized for better maintainabi
 - **Extensibility**: Easy to add new features or modify existing ones
 
 ### **New File Structure**
+
 ```
 src/
 ├── components/          # UI components
@@ -226,6 +259,8 @@ src/
 ## Contributing
 
 Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/your-username/2d-tech-wheel/issues).
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code style, development workflow, and testing requirements.
 
 ---
 
