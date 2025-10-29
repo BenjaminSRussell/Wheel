@@ -4,14 +4,14 @@
  */
 
 const WHEEL_SEGMENTS = [
-  { label: 'Get Drunk', color: 0x8b0000 },
-  { label: 'Dance Party', color: 0x4b0082 },
-  { label: 'Pizza Night', color: 0x708090 },
-  { label: 'Movie Marathon', color: 0x556b2f },
-  { label: 'Beach Day', color: 0xff8c00 },
-  { label: 'Game Night', color: 0xf5f5dc },
-  { label: 'Adventure Time', color: 0x228b22 },
-  { label: 'Sleep In', color: 0x2f4f4f },
+  { label: "Haunted House", color: 0x1a0a00 },
+  { label: "Pumpkin Patch", color: 0xff6600 },
+  { label: "Witch's Brew", color: 0x4b0082 },
+  { label: "Ghost Town", color: 0xcccccc },
+  { label: "Blood Moon", color: 0x8b0000 },
+  { label: "Candy Corn", color: 0xffa500 },
+  { label: "Black Cat", color: 0x0a0a0a },
+  { label: "Graveyard", color: 0x2f4f2f },
 ];
 
 const WHEEL_APPEARANCE = {
@@ -27,7 +27,7 @@ const LED_CONFIG = {
   ledCount: 16,
   ledRadius: 3.7,
   ledSize: 0.08,
-  ledColors: [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff],
+  ledColors: [0xff6600, 0xff4500, 0xff8c00, 0xffa500],
 };
 
 export const PHYSICS_CONFIG = {
@@ -47,10 +47,7 @@ export const CONFETTI_CONFIG = {
   particleCount: 50,
   streamDuration: 10000,
   burstInterval: 200,
-  colors: [
-    0xff6b6b, 0x4ecdc4, 0x45b7d1, 0x96ceb4, 0xfeca57, 0xff9ff3, 0x54a0ff, 0x5f27cd, 0xff4757,
-    0x2ed573, 0x1e90ff, 0xffa502,
-  ],
+  colors: [0xff6600, 0x8b0000, 0x4b0082, 0x000000, 0xffa500, 0x663399],
   particleSize: 0.1,
   initialPosition: {
     xRange: 8,
@@ -91,9 +88,9 @@ const ANIMATION_CONFIG = {
 };
 
 export const UI_CONFIG = {
-  title: 'Decision Wheel',
-  buttonText: 'SPIN THE WHEEL!',
-  buttonDisabledText: 'SPINNING...',
+  title: "Decision Wheel",
+  buttonText: "SPIN THE WHEEL!",
+  buttonDisabledText: "SPINNING...",
   buttonCooldown: 2000,
 };
 

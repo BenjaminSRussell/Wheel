@@ -4,7 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Decision Wheel</title>
-    <link rel="preload" href="/src/main.js" as="script" crossorigin="anonymous" />
+    <link
+      rel="preload"
+      href="/src/main.js"
+      as="script"
+      crossorigin="anonymous"
+    />
     <meta name="description" content="Decision Wheel" />
     <meta name="theme-color" content="#0a0a0a" />
     <link
@@ -33,15 +38,21 @@
           #54a0ff,
           #5f27cd
         );
-        --button-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(0, 0, 0, 0.2);
-        --button-shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.4), 0 10px 20px rgba(0, 0, 0, 0.3);
+        --button-shadow:
+          0 15px 35px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(0, 0, 0, 0.2);
+        --button-shadow-hover:
+          0 20px 40px rgba(0, 0, 0, 0.4), 0 10px 20px rgba(0, 0, 0, 0.3);
       }
 
       body {
         margin: 0;
         overflow: hidden;
-        background: var(--primary-bg);
-        font-family: 'Comic Sans MS', 'Segoe UI', Arial, sans-serif;
+        background: radial-gradient(
+          ellipse at center,
+          #0a0a0a 0%,
+          #1a0a00 100%
+        );
+        font-family: "Comic Sans MS", "Segoe UI", Arial, sans-serif;
         height: 100vh;
         position: relative;
         color: var(--text-primary);
@@ -63,22 +74,20 @@
         font-size: 28px;
         font-weight: 900;
         color: var(--text-primary);
-        background: var(--accent-gradient);
-        background-size: 400% 400%;
+        background: linear-gradient(135deg, #ff6600, #cc5200);
         border: 6px solid var(--text-primary);
         border-radius: 40px;
         cursor: pointer;
         box-shadow:
-          var(--button-shadow),
+          0 0 30px rgba(255, 102, 0, 0.8),
+          0 10px 25px rgba(0, 0, 0, 0.5),
           inset 0 1px 0 rgba(255, 255, 255, 0.3);
         z-index: 9999;
         display: block;
         text-transform: uppercase;
         letter-spacing: 2px;
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        animation:
-          gradientShift 3s ease infinite,
-          pulse 2s ease-in-out infinite;
+        animation: halloweenPulse 2s ease-in-out infinite;
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         position: relative;
         overflow: visible;
@@ -90,9 +99,10 @@
       #spinButton:hover:not(:disabled) {
         transform: translateX(-50%) scale(1.1) rotate(2deg);
         box-shadow:
-          var(--button-shadow-hover),
+          0 0 40px rgba(255, 102, 0, 0.9),
+          0 15px 30px rgba(0, 0, 0, 0.5),
           inset 0 1px 0 rgba(255, 255, 255, 0.4);
-        animation-duration: 1s, 1s;
+        animation-duration: 1s;
       }
 
       #spinButton:active:not(:disabled) {
@@ -118,50 +128,27 @@
         font-weight: 900;
         text-align: center;
         color: var(--text-primary);
-        text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
         z-index: 1000;
-        background: var(--accent-gradient);
+        background: linear-gradient(90deg, #ff6600, #ff4500, #ff8c00);
         background-clip: text;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        animation: titleGlow 4s ease-in-out infinite;
+        filter: drop-shadow(0 0 10px rgba(255, 102, 0, 0.6));
       }
 
-      @keyframes gradientShift {
-        0% {
-          background-position: 0% 50%;
-        }
-        50% {
-          background-position: 100% 50%;
-        }
-        100% {
-          background-position: 0% 50%;
-        }
-      }
-
-      @keyframes pulse {
+      @keyframes halloweenPulse {
         0%,
         100% {
           box-shadow:
-            var(--button-shadow),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3),
-            0 0 20px rgba(255, 107, 107, 0.5);
+            0 0 20px rgba(255, 102, 0, 0.6),
+            0 10px 25px rgba(0, 0, 0, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
         50% {
           box-shadow:
-            var(--button-shadow),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3),
-            0 0 40px rgba(78, 205, 196, 0.8);
-        }
-      }
-
-      @keyframes titleGlow {
-        0%,
-        100% {
-          filter: brightness(1);
-        }
-        50% {
-          filter: brightness(1.2);
+            0 0 40px rgba(255, 102, 0, 0.9),
+            0 10px 25px rgba(0, 0, 0, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
       }
 

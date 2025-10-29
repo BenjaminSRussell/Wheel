@@ -1,11 +1,11 @@
-import * as THREE from 'three';
+import * as THREE from "three";
 
-import { APP_CONFIG, WHEEL_CONFIG } from '../config/appConfig.js';
+import { WHEEL_CONFIG } from "../config/appConfig.js";
 
 export class Wheel {
   constructor(scene, config = {}) {
     if (!scene) {
-      throw new Error('Scene is required');
+      throw new Error("Scene is required");
     }
 
     this.scene = scene;
@@ -53,7 +53,10 @@ export class Wheel {
 
     for (let i = 0; i <= 32; i++) {
       const angle = startAngle + (endAngle - startAngle) * (i / 32);
-      shape.lineTo(Math.cos(angle) * outerRadius, Math.sin(angle) * outerRadius);
+      shape.lineTo(
+        Math.cos(angle) * outerRadius,
+        Math.sin(angle) * outerRadius,
+      );
     }
     shape.lineTo(0, 0);
     shape.closePath();
@@ -69,41 +72,56 @@ export class Wheel {
     const edges = new THREE.EdgesGeometry(geometry);
     const line = new THREE.LineSegments(
       edges,
-      new THREE.LineBasicMaterial({ color: 0xffd700, linewidth: 3 }),
+      new THREE.LineBasicMaterial({ color: 0xff6600, linewidth: 5 }),
     );
 
     const group = new THREE.Group();
     group.add(mesh);
     group.add(line);
-    this._addTextLabel(group, label, startAngle, endAngle, innerRadius, outerRadius);
+    this._addTextLabel(
+      group,
+      label,
+      startAngle,
+      endAngle,
+      innerRadius,
+      outerRadius,
+    );
 
     return group;
   }
 
   _addTextLabel(group, text, startAngle, endAngle, innerRadius, outerRadius) {
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
     canvas.width = 256;
     canvas.height = 64;
 
     context.font = 'bold 36px "Playfair Display", "Times New Roman", serif';
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.strokeStyle = '#000000';
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.strokeStyle = "#000000";
     context.lineWidth = 3;
     context.strokeText(text, canvas.width / 2, canvas.height / 2);
-    context.fillStyle = '#FFFFFF';
+    context.fillStyle = "#FFFFFF";
     context.fillText(text, canvas.width / 2, canvas.height / 2);
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.needsUpdate = true;
     const sprite = new THREE.Sprite(
-      new THREE.SpriteMaterial({ map: texture, transparent: true, alphaTest: 0.1 }),
+      new THREE.SpriteMaterial({
+        map: texture,
+        transparent: true,
+        alphaTest: 0.1,
+      }),
     );
 
     const midAngle = (startAngle + endAngle) / 2;
     const labelRadius = outerRadius * 0.8;
-    sprite.position.set(Math.cos(midAngle) * labelRadius, Math.sin(midAngle) * labelRadius, 0.1);
+    sprite.position.set(
+      Math.cos(midAngle) * labelRadius,
+      Math.sin(midAngle) * labelRadius,
+      0.1,
+    );
     sprite.scale.set(1.0, 0.3, 1);
     sprite.rotation.z = midAngle + Math.PI / 2;
 
@@ -125,7 +143,11 @@ export class Wheel {
       });
 
       const led = new THREE.Mesh(geometry, material);
-      led.position.set(Math.cos(angle) * ledRadius, Math.sin(angle) * ledRadius, 0.1);
+      led.position.set(
+        Math.cos(angle) * ledRadius,
+        Math.sin(angle) * ledRadius,
+        0.1,
+      );
 
       this.wheelGroup.add(led);
       this.ledLights.push({ mesh: led, phase: i, angle });
@@ -133,7 +155,8 @@ export class Wheel {
   }
 
   _buildPointer() {
-    const { pointerLength, pointerWidth, pointerColor, pointerPosition } = this.config;
+    const { pointerLength, pointerWidth, pointerColor, pointerPosition } =
+      this.config;
 
     const arrowShape = new THREE.Shape();
     const halfWidth = pointerWidth / 2;
@@ -154,7 +177,11 @@ export class Wheel {
 
     const pointerGroup = new THREE.Group();
     pointerGroup.add(arrow);
-    pointerGroup.position.set(pointerPosition.x, pointerPosition.y, pointerPosition.z);
+    pointerGroup.position.set(
+      pointerPosition.x,
+      pointerPosition.y,
+      pointerPosition.z,
+    );
 
     this.scene.add(pointerGroup);
     this.pointer = pointerGroup;
@@ -165,21 +192,13 @@ export class Wheel {
   }
 
   updateLEDs(time) {
-    const { ledPulseSpeed, ledIntensityBase } = APP_CONFIG.animation;
-    const pulseFactor = 0.5;
-    const colorShiftSpeed = 0.5;
-    const phaseFactor = 0.1;
+    const baseIntensity = 0.8;
+    const pulseAmount = 0.3;
 
-    this.ledLights.forEach((led) => {
-      const pulse = Math.sin(time * ledPulseSpeed + led.phase) * pulseFactor + pulseFactor;
-      const intensity = ledIntensityBase * (pulseFactor + pulse * pulseFactor);
-
-      led.mesh.material.emissiveIntensity = intensity;
-
-      const hue = (time * colorShiftSpeed + led.phase * phaseFactor) % 1;
-      const color = new THREE.Color().setHSL(hue, 1, 0.5);
-      led.mesh.material.color = color;
-      led.mesh.material.emissive = color;
+    this.ledLights.forEach((led, index) => {
+      const phase = (index / this.ledLights.length) * Math.PI * 2;
+      const pulse = Math.sin(time * 2 + phase) * pulseAmount + baseIntensity;
+      led.mesh.material.emissiveIntensity = pulse;
     });
   }
 
@@ -189,8 +208,10 @@ export class Wheel {
     const twoPi = 2 * Math.PI;
 
     for (const [index, segment] of this.segments.entries()) {
-      const startAngle = ((segment.startRad + wheelAngle) % twoPi + twoPi) % twoPi;
-      const endAngle = ((segment.endRad + wheelAngle) % twoPi + twoPi) % twoPi;
+      const startAngle =
+        (((segment.startRad + wheelAngle) % twoPi) + twoPi) % twoPi;
+      const endAngle =
+        (((segment.endRad + wheelAngle) % twoPi) + twoPi) % twoPi;
 
       const isInSegment =
         startAngle <= endAngle
@@ -211,7 +232,7 @@ export class Wheel {
 
     return {
       index: 0,
-      label: this.segments[0]?.label ?? 'Unknown',
+      label: this.segments[0]?.label ?? "Unknown",
       wheelAngle,
       pointerAngle,
       segmentStart: 0,
