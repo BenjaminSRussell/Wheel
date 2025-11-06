@@ -1,6 +1,6 @@
-# 2D Tech Wheel
+# Halloween Decision Wheel
 
-> A modern, customizable 2D spinning wheel built with Three.js and a physics-based spin controller. Features tech-themed segments with smooth animations, LED effects, and confetti celebrations.
+> A spooky, customizable 2D spinning wheel built with Three.js and a physics-based spin controller. Features Halloween-themed segments with smooth animations, LED effects, and confetti celebrations.
 
 ![Spinning Wheel Demo](./visual.png)
 
@@ -8,9 +8,11 @@
 
 ## Features
 
-- **Tech-Themed Segments**: 8 programming languages and technologies (JavaScript, Python, TypeScript, React, Node.js, Go, Rust, Swift)
+- **Halloween-Themed Segments**: 8 spooky activities (Haunted House, Pumpkin Patch, Witch's Brew, Ghost Town, Blood Moon, Candy Corn, Black Cat, Graveyard)
+- **Winner Display**: Animated result card that shows the winning segment with matching colors
+- **Cooldown Timer**: Visual countdown showing when you can spin again
 - **Physics-Based Spinning**: Custom spin controller with realistic deceleration and momentum
-- **LED Rim Effects**: Animated LED lights around the wheel perimeter with pulsing colors
+- **LED Rim Effects**: Animated LED lights around the wheel perimeter with pulsing Halloween colors
 - **Confetti System**: Particle-based confetti celebration when the wheel stops
 - **Smooth Animations**: 60fps rendering with optimized Three.js performance
 - **Responsive Design**: Adapts to different screen sizes and orientations
@@ -159,39 +161,41 @@ Test files are located alongside their source code in `__tests__` directories.
 
 ## How to Customize
 
-Customizing the wheel is easy! All the main configuration is located in `src/components/Wheel.js`.
+Customizing the wheel is easy! All the main configuration is located in `src/config/appConfig.js`.
 
-### Changing Wheel Segments (Tech Labels and Colors)
+### Changing Wheel Segments (Labels and Colors)
 
-1. **Open `src/components/Wheel.js`**.
-2. Find the `segments` array in the constructor configuration:
+1. **Open `src/config/appConfig.js`**.
+2. Find the `WHEEL_SEGMENTS` array at the top of the file:
 
    ```javascript
-   segments: [
-     { label: 'JavaScript', color: 0x3498db },
-     { label: 'Python', color: 0x2ecc71 },
-     { label: 'TypeScript', color: 0x9b59b6 },
-     { label: 'React', color: 0xe74c3c },
-     { label: 'Node.js', color: 0x1abc9c },
-     { label: 'Go', color: 0x34495e },
-     { label: 'Rust', color: 0xf39c12 },
-     { label: 'Swift', color: 0x27ae60 },
+   const WHEEL_SEGMENTS = [
+     { label: "Haunted House", color: 0x1a0a00 },
+     { label: "Pumpkin Patch", color: 0xff6600 },
+     { label: "Witch's Brew", color: 0x4b0082 },
+     { label: "Ghost Town", color: 0xcccccc },
+     { label: "Blood Moon", color: 0x8b0000 },
+     { label: "Candy Corn", color: 0xffa500 },
+     { label: "Black Cat", color: 0x0a0a0a },
+     { label: "Graveyard", color: 0x2f4f2f },
    ];
    ```
 
-3. **To change the tech labels**, edit the `label` property of each segment object.
-4. **To change the colors**, edit the `color` property using hex values (e.g., `0x3498db` for blue).
+3. **To change the labels**, edit the `label` property of each segment object.
+4. **To change the colors**, edit the `color` property using hex values (e.g., `0xff6600` for orange).
 5. **To add/remove segments**, simply add or remove objects from the array. The wheel will automatically adjust to the new number of segments.
 
 ### Customizing LED Effects
 
-You can modify the LED rim effects by changing these properties in the Wheel constructor:
+You can modify the LED rim effects in `src/config/appConfig.js` by changing the `LED_CONFIG` object:
 
 ```javascript
-ledCount: 16,           // Number of LED lights
-ledRadius: 3.7,         // Distance from center
-ledSize: 0.08,          // Size of each LED
-ledColors: [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff]
+const LED_CONFIG = {
+  ledCount: 16,                                             // Number of LED lights
+  ledRadius: 3.7,                                           // Distance from center
+  ledSize: 0.08,                                            // Size of each LED
+  ledColors: [0xff6600, 0xff4500, 0xff8c00, 0xffa500],    // Halloween orange colors
+};
 ```
 
 ---

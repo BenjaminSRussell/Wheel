@@ -48,8 +48,14 @@ export class ConfettiSystem {
     }
   }
 
-  createConfetti() {
+  /**
+   * Creates a confetti burst
+   * @param {number[]} [customColors] - Optional array of hex colors to use for confetti. If not provided, uses default colors.
+   */
+  createConfetti(customColors = null) {
     this.clearConfetti();
+    // Use custom colors if provided, otherwise fall back to default config colors
+    this.activeColors = customColors && customColors.length > 0 ? customColors : this.colors;
     this.startTime = performance.now();
     this.lastBurstTime = performance.now();
     this.isActive = true;
@@ -64,8 +70,8 @@ export class ConfettiSystem {
         CONFETTI_CONFIG.particleSize,
         CONFETTI_CONFIG.particleSize,
       );
-      const baseColor = cryptoRandomArrayElement(this.colors);
-      const emissiveColor = new THREE.Color(cryptoRandomArrayElement(this.colors));
+      const baseColor = cryptoRandomArrayElement(this.activeColors || this.colors);
+      const emissiveColor = new THREE.Color(cryptoRandomArrayElement(this.activeColors || this.colors));
       emissiveColor.multiplyScalar(0.2);
       const material = new THREE.MeshLambertMaterial({
         color: baseColor,

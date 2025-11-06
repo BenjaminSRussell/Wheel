@@ -1,6 +1,7 @@
 import { PHYSICS_CONFIG } from '../config/appConfig.js';
 import { cryptoRandomFloat } from '../utils/crypto.js';
 import { TWO_PI, normalizeAngleRad, degToRad, radToDeg } from '../utils/math.js';
+import { easeOutCubic } from '../utils/easing.js';
 
 export class SpinController {
   constructor({ initialAngle = 0, friction = PHYSICS_CONFIG.friction } = {}) {
@@ -16,6 +17,7 @@ export class SpinController {
     this._onComplete = null;
     this._maxVelocity = 0;
     this._accelerationPhase = true;
+    this._decelerationStartRotation = 0; // Track when deceleration starts for easing calculation
 
     this._rafId = null;
     this._boundTick = this._tick.bind(this);

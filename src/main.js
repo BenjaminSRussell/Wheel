@@ -47,6 +47,45 @@ if (!spinButton) {
   throw new Error('Spin button element not found');
 }
 
+const resultDisplay = document.getElementById('resultDisplay');
+const winnerText = document.getElementById('winnerText');
+const cooldownOverlay = document.getElementById('cooldownOverlay');
+const cooldownTimer = document.getElementById('cooldownTimer');
+
+if (!resultDisplay || !winnerText || !cooldownOverlay || !cooldownTimer) {
+  throw new Error('Result display elements not found');
+}
+
+function showResult(segment) {
+  winnerText.textContent = segment.label;
+  resultDisplay.style.background = `linear-gradient(135deg, #${segment.color.toString(16).padStart(6, '0')}, #${Math.floor(segment.color * 0.8).toString(16).padStart(6, '0')})`;
+
+  setTimeout(() => {
+    resultDisplay.classList.add('show');
+  }, 300);
+
+  setTimeout(() => {
+    resultDisplay.classList.remove('show');
+  }, 4000);
+}
+
+function startCooldownTimer(duration) {
+  const startTime = Date.now();
+  cooldownOverlay.classList.add('show');
+
+  const intervalId = setInterval(() => {
+    const elapsed = Date.now() - startTime;
+    const remaining = Math.ceil((duration - elapsed) / 1000);
+
+    if (remaining <= 0) {
+      clearInterval(intervalId);
+      cooldownOverlay.classList.remove('show');
+    } else {
+      cooldownTimer.textContent = remaining;
+    }
+  }, 100);
+}
+
 function handleSpinClick() {
   if (spinController.isSpinning || spinButton.disabled) {
     return;
@@ -54,10 +93,15 @@ function handleSpinClick() {
 
   spinButton.disabled = true;
   spinButton.textContent = APP_CONFIG.ui.buttonDisabledText;
+  resultDisplay.classList.remove('show');
 
   spinController.startSpin((finalAngle) => {
-    wheel.getCurrentSegment();
-    confettiSystem.createConfetti();
+    const winningSegment = wheel.getCurrentSegment();
+    // Create confetti using the winning segment's color for a cohesive effect
+    confettiSystem.createConfetti([winningSegment.color]);
+
+    showResult(winningSegment);
+    startCooldownTimer(APP_CONFIG.ui.buttonCooldown);
 
     setTimeout(() => {
       spinButton.disabled = false;

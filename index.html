@@ -176,11 +176,90 @@
           min-width: 200px;
         }
       }
+
+      #resultDisplay {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        background: linear-gradient(135deg, #ff6600, #cc5200);
+        border: 6px solid #ffffff;
+        border-radius: 30px;
+        padding: 40px 60px;
+        font-size: 3rem;
+        font-weight: 900;
+        color: #ffffff;
+        text-align: center;
+        z-index: 10000;
+        box-shadow:
+          0 0 60px rgba(255, 102, 0, 0.9),
+          0 20px 40px rgba(0, 0, 0, 0.6);
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        max-width: 80vw;
+        word-wrap: break-word;
+      }
+
+      #resultDisplay.show {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+
+      #resultDisplay .winner-label {
+        font-size: 1.2rem;
+        text-transform: uppercase;
+        letter-spacing: 4px;
+        margin-bottom: 15px;
+        opacity: 0.9;
+      }
+
+      #resultDisplay .winner-text {
+        font-size: 3rem;
+        text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+      }
+
+      #cooldownOverlay {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 1.2rem;
+        color: #ffffff;
+        text-align: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+        z-index: 9998;
+      }
+
+      #cooldownOverlay.show {
+        opacity: 1;
+      }
+
+      @media (max-width: 768px) {
+        #resultDisplay {
+          padding: 30px 40px;
+        }
+
+        #resultDisplay .winner-text {
+          font-size: 2rem;
+        }
+
+        #resultDisplay .winner-label {
+          font-size: 1rem;
+        }
+      }
     </style>
   </head>
   <body>
     <canvas id="c"></canvas>
     <button id="spinButton">SPIN THE WHEEL!</button>
+    <div id="resultDisplay">
+      <div class="winner-label">Winner!</div>
+      <div class="winner-text" id="winnerText"></div>
+    </div>
+    <div id="cooldownOverlay">Next spin in <span id="cooldownTimer">2</span>s</div>
 
     <script type="importmap">
       {

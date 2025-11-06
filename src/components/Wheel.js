@@ -1,6 +1,7 @@
 import * as THREE from "three";
 
 import { WHEEL_CONFIG } from "../config/appConfig.js";
+import * as CONST from "./WheelConstants.js";
 
 export class Wheel {
   constructor(scene, config = {}) {
@@ -51,8 +52,8 @@ export class Wheel {
     const shape = new THREE.Shape();
     shape.moveTo(0, 0);
 
-    for (let i = 0; i <= 32; i++) {
-      const angle = startAngle + (endAngle - startAngle) * (i / 32);
+    for (let i = 0; i <= CONST.SEGMENT_RESOLUTION; i++) {
+      const angle = startAngle + (endAngle - startAngle) * (i / CONST.SEGMENT_RESOLUTION);
       shape.lineTo(
         Math.cos(angle) * outerRadius,
         Math.sin(angle) * outerRadius,
@@ -65,14 +66,14 @@ export class Wheel {
     const material = new THREE.MeshLambertMaterial({
       color: color,
       side: THREE.DoubleSide,
-      emissive: new THREE.Color(color).multiplyScalar(0.1),
+      emissive: new THREE.Color(color).multiplyScalar(CONST.EMISSIVE_MULTIPLIER),
     });
 
     const mesh = new THREE.Mesh(geometry, material);
     const edges = new THREE.EdgesGeometry(geometry);
     const line = new THREE.LineSegments(
       edges,
-      new THREE.LineBasicMaterial({ color: 0xff6600, linewidth: 5 }),
+      new THREE.LineBasicMaterial({ color: CONST.EDGE_COLOR, linewidth: CONST.EDGE_LINE_WIDTH }),
     );
 
     const group = new THREE.Group();
@@ -93,14 +94,14 @@ export class Wheel {
   _addTextLabel(group, text, startAngle, endAngle, innerRadius, outerRadius) {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");
-    canvas.width = 256;
-    canvas.height = 64;
+    canvas.width = CONST.LABEL_CANVAS_WIDTH;
+    canvas.height = CONST.LABEL_CANVAS_HEIGHT;
 
     context.font = 'bold 36px "Playfair Display", "Times New Roman", serif';
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.strokeStyle = "#000000";
-    context.lineWidth = 3;
+    context.lineWidth = CONST.LABEL_LINE_WIDTH;
     context.strokeText(text, canvas.width / 2, canvas.height / 2);
     context.fillStyle = "#FFFFFF";
     context.fillText(text, canvas.width / 2, canvas.height / 2);
@@ -111,18 +112,19 @@ export class Wheel {
       new THREE.SpriteMaterial({
         map: texture,
         transparent: true,
-        alphaTest: 0.1,
+        alphaTest: CONST.MATERIAL_ALPHA_TEST,
       }),
     );
 
     const midAngle = (startAngle + endAngle) / 2;
-    const labelRadius = outerRadius * 0.8;
+    const labelRadius = outerRadius * CONST.LABEL_RADIUS_RATIO;
     sprite.position.set(
       Math.cos(midAngle) * labelRadius,
       Math.sin(midAngle) * labelRadius,
-      0.1,
+      CONST.MATERIAL_DEPTH_TEST_OFFSET,
     );
-    sprite.scale.set(1.0, 0.3, 1);
+    sprite.scale.set(CONST.SPRITE_SCALE_X, CONST.SPRITE_SCALE_Y, CONST.SPRITE_SCALE_Z);
+    // Rotate sprite to align with segment radially (add 90° to orient text outward from center)
     sprite.rotation.z = midAngle + Math.PI / 2;
 
     group.add(sprite);
@@ -135,18 +137,22 @@ export class Wheel {
       const angle = (i / ledCount) * Math.PI * 2;
       const color = ledColors[i % ledColors.length];
 
-      const geometry = new THREE.SphereGeometry(ledSize, 12, 12);
+      const geometry = new THREE.SphereGeometry(
+        ledSize,
+        CONST.LED_SPHERE_SEGMENTS_HORIZONTAL,
+        CONST.LED_SPHERE_SEGMENTS_VERTICAL
+      );
       const material = new THREE.MeshLambertMaterial({
         color: color,
         emissive: new THREE.Color(color),
-        emissiveIntensity: 0.8,
+        emissiveIntensity: CONST.LED_BASE_INTENSITY,
       });
 
       const led = new THREE.Mesh(geometry, material);
       led.position.set(
         Math.cos(angle) * ledRadius,
         Math.sin(angle) * ledRadius,
-        0.1,
+        CONST.MATERIAL_DEPTH_TEST_OFFSET,
       );
 
       this.wheelGroup.add(led);
@@ -168,12 +174,12 @@ export class Wheel {
     const arrowGeometry = new THREE.ShapeGeometry(arrowShape);
     const arrowMaterial = new THREE.MeshLambertMaterial({
       color: pointerColor,
-      emissive: new THREE.Color(pointerColor).multiplyScalar(0.2),
+      emissive: new THREE.Color(pointerColor).multiplyScalar(CONST.POINTER_EMISSIVE_MULTIPLIER),
       side: THREE.DoubleSide,
     });
 
     const arrow = new THREE.Mesh(arrowGeometry, arrowMaterial);
-    arrow.position.set(0, 0, 0.1);
+    arrow.position.set(0, 0, CONST.POINTER_Z_OFFSET);
 
     const pointerGroup = new THREE.Group();
     pointerGroup.add(arrow);
@@ -192,27 +198,35 @@ export class Wheel {
   }
 
   updateLEDs(time) {
-    const baseIntensity = 0.8;
-    const pulseAmount = 0.3;
-
     this.ledLights.forEach((led, index) => {
+      // Create phase offset for each LED to create wave effect around the wheel
       const phase = (index / this.ledLights.length) * Math.PI * 2;
-      const pulse = Math.sin(time * 2 + phase) * pulseAmount + baseIntensity;
+      // Sine wave creates pulsing effect: oscillates between (baseIntensity - pulseAmount) and (baseIntensity + pulseAmount)
+      const pulse = Math.sin(time * CONST.LED_PULSE_SPEED_MULTIPLIER + phase) * CONST.LED_PULSE_AMOUNT + CONST.LED_BASE_INTENSITY;
       led.mesh.material.emissiveIntensity = pulse;
     });
   }
 
+  /**
+   * Determines which segment is currently under the pointer
+   * @returns {Object} Segment information including index, label, color, and angles
+   */
   getCurrentSegment() {
-    const pointerAngle = -Math.PI / 2;
+    const pointerAngle = CONST.POINTER_ANGLE_RAD; // Pointer at top of wheel
     const wheelAngle = this.wheelGroup.rotation.z;
     const twoPi = 2 * Math.PI;
 
+    // Check each segment to see if pointer is within its boundaries
+    // Angle normalization handles wraparound at 0/2π boundary
     for (const [index, segment] of this.segments.entries()) {
+      // Normalize angles to [0, 2π) range to handle wraparound
       const startAngle =
         (((segment.startRad + wheelAngle) % twoPi) + twoPi) % twoPi;
       const endAngle =
         (((segment.endRad + wheelAngle) % twoPi) + twoPi) % twoPi;
 
+      // Check if pointer is within segment boundaries
+      // Handle wraparound case where segment crosses 0° boundary (e.g., starts at 350° and ends at 10°)
       const isInSegment =
         startAngle <= endAngle
           ? pointerAngle >= startAngle && pointerAngle < endAngle
@@ -222,6 +236,7 @@ export class Wheel {
         return {
           index,
           label: segment.label,
+          color: segment.color,
           wheelAngle,
           pointerAngle,
           segmentStart: startAngle,
@@ -230,13 +245,15 @@ export class Wheel {
       }
     }
 
+    // Fallback: return first segment if no match found (should rarely happen)
     return {
       index: 0,
       label: this.segments[0]?.label ?? "Unknown",
+      color: this.segments[0]?.color ?? CONST.EDGE_COLOR,
       wheelAngle,
       pointerAngle,
       segmentStart: 0,
-      segmentEnd: Math.PI / 4,
+      segmentEnd: CONST.FALLBACK_SEGMENT_ANGLE,
     };
   }
 }
