@@ -27,6 +27,11 @@ camera.position.set(
   APP_CONFIG.scene.cameraPosition.y,
   APP_CONFIG.scene.cameraPosition.z,
 );
+camera.lookAt(
+  APP_CONFIG.scene.cameraLookAt.x,
+  APP_CONFIG.scene.cameraLookAt.y,
+  APP_CONFIG.scene.cameraLookAt.z,
+);
 
 const canvas = document.querySelector('#c');
 if (!canvas) {
@@ -41,6 +46,53 @@ const wheel = new Wheel(scene);
 const spinController = new SpinController();
 const confettiSystem = new ConfettiSystem(scene);
 confettiSystem.setCamera(camera);
+
+// Camera effects configuration
+const baseCameraZ = APP_CONFIG.scene.cameraPosition.z;
+const cameraZoomAmount = 2.0; // How much to zoom in during fast spin
+const cameraShakeAmount = 0.15; // Camera shake intensity
+let cameraShakeX = 0;
+let cameraShakeY = 0;
+
+// Mouse hover detection
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+function onMouseMove(event) {
+  // Only do hover effects when not spinning
+  if (spinController.isSpinning) {
+    wheel.setHoveredSegment(-1);
+    return;
+  }
+
+  // Calculate mouse position in normalized device coordinates (-1 to +1)
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  // Update raycaster
+  raycaster.setFromCamera(mouse, camera);
+
+  // Check intersections with wheel segments
+  const intersects = raycaster.intersectObjects(wheel.wheelGroup.children, true);
+
+  if (intersects.length > 0) {
+    // Find which segment was hit
+    for (let i = 0; i < wheel.segmentMeshes.length; i++) {
+      const segmentMesh = wheel.segmentMeshes[i].mesh;
+      if (intersects[0].object === segmentMesh) {
+        wheel.setHoveredSegment(i);
+        canvas.style.cursor = 'pointer';
+        return;
+      }
+    }
+  }
+
+  // No segment hovered
+  wheel.setHoveredSegment(-1);
+  canvas.style.cursor = 'default';
+}
+
+window.addEventListener('mousemove', onMouseMove);
 
 const spinButton = document.getElementById('spinButton');
 if (!spinButton) {
@@ -114,6 +166,29 @@ spinButton.addEventListener('click', handleSpinClick);
 
 let animationTime = 0;
 
+function updateCameraEffects(velocity) {
+  // Normalize velocity (max velocity around 25 rad/s)
+  const normalizedVelocity = Math.min(Math.abs(velocity) / 25, 1.0);
+
+  // Zoom in based on velocity (faster = closer)
+  const targetZ = baseCameraZ - (normalizedVelocity * cameraZoomAmount);
+  camera.position.z += (targetZ - camera.position.z) * 0.1; // Smooth interpolation
+
+  // Camera shake at high velocities
+  if (normalizedVelocity > 0.5) {
+    const shakeIntensity = (normalizedVelocity - 0.5) * 2; // 0 to 1 range above threshold
+    cameraShakeX = (Math.random() - 0.5) * cameraShakeAmount * shakeIntensity;
+    cameraShakeY = (Math.random() - 0.5) * cameraShakeAmount * shakeIntensity;
+  } else {
+    // Smoothly return to center when not shaking
+    cameraShakeX *= 0.8;
+    cameraShakeY *= 0.8;
+  }
+
+  camera.position.x = APP_CONFIG.scene.cameraPosition.x + cameraShakeX;
+  camera.position.y = APP_CONFIG.scene.cameraPosition.y + cameraShakeY;
+}
+
 function animate() {
   requestAnimationFrame(animate);
 
@@ -124,8 +199,12 @@ function animate() {
   animationTime += APP_CONFIG.animation.frameDelta;
 
   const angle = spinController.update();
+  const velocity = spinController.angularVelocity;
+
   wheel.updateRotation(angle);
-  wheel.updateLEDs(animationTime);
+  wheel.updateLEDs(animationTime, velocity);
+  wheel.updateHoverEffects();
+  updateCameraEffects(velocity);
   confettiSystem.update();
   renderer.render(scene, camera);
 }

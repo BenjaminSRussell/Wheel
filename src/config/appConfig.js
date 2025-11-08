@@ -149,8 +149,10 @@ export const SCENE_CONFIG = {
   backgroundColor: 0x0a0a0a,
   ambientLightIntensity: 0.6,
   directionalLightIntensity: 0.8,
-  cameraPosition: { x: 0, y: 0, z: 12 },
+  cameraPosition: { x: 0, y: -1, z: 12 }, // Slightly offset for perspective
   cameraFov: 50,
+  cameraLookAt: { x: 0, y: 0, z: 0 }, // Tilt camera to look at wheel center
+  wheelDepth: 0.3, // Depth extrusion for 3D effect
 };
 
 export const WHEEL_CONFIG = {

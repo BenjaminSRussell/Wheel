@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-import { WHEEL_CONFIG } from "../config/appConfig.js";
+import { WHEEL_CONFIG, SCENE_CONFIG } from "../config/appConfig.js";
 import * as CONST from "./WheelConstants.js";
 
 export class Wheel {
@@ -12,6 +12,8 @@ export class Wheel {
     this.scene = scene;
     this.wheelGroup = new THREE.Group();
     this.ledLights = [];
+    this.segmentMeshes = []; // Store segment meshes for hover effects
+    this.hoveredSegmentIndex = -1; // Track which segment is hovered
 
     this.config = {
       ...WHEEL_CONFIG,
@@ -22,6 +24,7 @@ export class Wheel {
     this._buildWheel();
     this._buildLEDs();
     this._buildPointer();
+    this._buildShadow();
     this.scene.add(this.wheelGroup);
   }
 
@@ -35,8 +38,8 @@ export class Wheel {
   }
 
   _buildWheel() {
-    this.segments.forEach((segment) => {
-      const segmentMesh = this._createSegment(
+    this.segments.forEach((segment, index) => {
+      const segmentGroup = this._createSegment(
         this.config.innerRadius,
         this.config.outerRadius,
         segment.startRad,
@@ -44,7 +47,14 @@ export class Wheel {
         segment.color,
         segment.label,
       );
-      this.wheelGroup.add(segmentMesh);
+      // Store reference to the mesh (first child is the actual segment mesh)
+      this.segmentMeshes.push({
+        group: segmentGroup,
+        mesh: segmentGroup.children[0], // The segment mesh
+        originalScale: 1.0,
+        targetScale: 1.0,
+      });
+      this.wheelGroup.add(segmentGroup);
     });
   }
 
@@ -62,10 +72,21 @@ export class Wheel {
     shape.lineTo(0, 0);
     shape.closePath();
 
-    const geometry = new THREE.ShapeGeometry(shape);
+    // Create 3D extrusion for depth effect
+    const extrudeSettings = {
+      depth: SCENE_CONFIG.wheelDepth,
+      bevelEnabled: true,
+      bevelThickness: 0.02,
+      bevelSize: 0.02,
+      bevelSegments: 2,
+    };
+
+    const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    // Center the geometry in Z so it's symmetric around Z=0
+    geometry.translate(0, 0, -SCENE_CONFIG.wheelDepth / 2);
+
     const material = new THREE.MeshLambertMaterial({
       color: color,
-      side: THREE.DoubleSide,
       emissive: new THREE.Color(color).multiplyScalar(CONST.EMISSIVE_MULTIPLIER),
     });
 
@@ -193,17 +214,48 @@ export class Wheel {
     this.pointer = pointerGroup;
   }
 
+  _buildShadow() {
+    // Create a circular shadow beneath the wheel for depth perception
+    const shadowGeometry = new THREE.CircleGeometry(this.config.outerRadius * 1.1, 64);
+    const shadowMaterial = new THREE.MeshBasicMaterial({
+      color: 0x000000,
+      opacity: 0.3,
+      transparent: true,
+      side: THREE.DoubleSide,
+    });
+
+    const shadow = new THREE.Mesh(shadowGeometry, shadowMaterial);
+    // Position shadow slightly behind wheel and below it
+    shadow.position.set(0, -0.5, -SCENE_CONFIG.wheelDepth / 2 - 0.1);
+    shadow.rotation.x = -Math.PI / 2; // Lay flat
+
+    this.scene.add(shadow);
+    this.shadow = shadow;
+  }
+
   updateRotation(angle) {
     this.wheelGroup.rotation.z = angle;
   }
 
-  updateLEDs(time) {
+  updateLEDs(time, velocity = 0) {
+    // Normalize velocity for effects (max expected velocity ~25 rad/s)
+    const normalizedVelocity = Math.min(Math.abs(velocity) / 25, 1.0);
+
+    // Chase effect: LEDs rotate during spin (higher velocity = faster rotation)
+    const chaseOffset = time * normalizedVelocity * 10; // Multiplier for chase speed
+
+    // Increase base intensity during high-speed spin for dramatic effect
+    const velocityBoost = normalizedVelocity * 0.5; // Up to 50% brighter
+
     this.ledLights.forEach((led, index) => {
       // Create phase offset for each LED to create wave effect around the wheel
       const phase = (index / this.ledLights.length) * Math.PI * 2;
-      // Sine wave creates pulsing effect: oscillates between (baseIntensity - pulseAmount) and (baseIntensity + pulseAmount)
-      const pulse = Math.sin(time * CONST.LED_PULSE_SPEED_MULTIPLIER + phase) * CONST.LED_PULSE_AMOUNT + CONST.LED_BASE_INTENSITY;
-      led.mesh.material.emissiveIntensity = pulse;
+
+      // Combine pulsing wave with chase rotation
+      const pulse = Math.sin(time * CONST.LED_PULSE_SPEED_MULTIPLIER + phase + chaseOffset) * CONST.LED_PULSE_AMOUNT + CONST.LED_BASE_INTENSITY;
+
+      // Apply velocity boost
+      led.mesh.material.emissiveIntensity = Math.min(pulse + velocityBoost, 2.0);
     });
   }
 
@@ -255,5 +307,50 @@ export class Wheel {
       segmentStart: 0,
       segmentEnd: CONST.FALLBACK_SEGMENT_ANGLE,
     };
+  }
+
+  /**
+   * Set which segment is hovered (or -1 for none)
+   * @param {number} segmentIndex - Index of hovered segment, or -1 for none
+   */
+  setHoveredSegment(segmentIndex) {
+    if (segmentIndex === this.hoveredSegmentIndex) {
+      return; // No change
+    }
+
+    // Reset previous hovered segment
+    if (this.hoveredSegmentIndex >= 0 && this.hoveredSegmentIndex < this.segmentMeshes.length) {
+      this.segmentMeshes[this.hoveredSegmentIndex].targetScale = 1.0;
+      // Reset emissive glow
+      const mesh = this.segmentMeshes[this.hoveredSegmentIndex].mesh;
+      if (mesh && mesh.material) {
+        mesh.material.emissive.multiplyScalar(0.1 / Math.max(mesh.material.emissive.r, mesh.material.emissive.g, mesh.material.emissive.b, 0.1));
+      }
+    }
+
+    this.hoveredSegmentIndex = segmentIndex;
+
+    // Highlight new hovered segment
+    if (segmentIndex >= 0 && segmentIndex < this.segmentMeshes.length) {
+      this.segmentMeshes[segmentIndex].targetScale = 1.05; // Slight scale up
+      // Increase emissive glow
+      const mesh = this.segmentMeshes[segmentIndex].mesh;
+      if (mesh && mesh.material) {
+        mesh.material.emissive.multiplyScalar(3.0); // Brighter glow
+      }
+    }
+  }
+
+  /**
+   * Update hover effects (smooth animations)
+   * Call this every frame
+   */
+  updateHoverEffects() {
+    this.segmentMeshes.forEach((segmentData) => {
+      // Smooth scale interpolation
+      const currentScale = segmentData.group.scale.x;
+      const newScale = currentScale + (segmentData.targetScale - currentScale) * 0.15;
+      segmentData.group.scale.set(newScale, newScale, 1);
+    });
   }
 }
