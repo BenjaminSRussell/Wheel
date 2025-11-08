@@ -177,6 +177,28 @@
         }
       }
 
+      /* Screen reader only class */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+      }
+
+      /* Reduced motion support */
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+
       #resultDisplay {
         position: fixed;
         top: 50%;
@@ -253,13 +275,32 @@
     </style>
   </head>
   <body>
-    <canvas id="c"></canvas>
-    <button id="spinButton">SPIN THE WHEEL!</button>
-    <div id="resultDisplay">
+    <canvas id="c" aria-label="Halloween Decision Wheel" role="img"></canvas>
+    <button
+      id="spinButton"
+      aria-label="Spin the wheel to select a random Halloween activity"
+      aria-live="polite">
+      SPIN THE WHEEL!
+    </button>
+    <div
+      id="resultDisplay"
+      role="status"
+      aria-live="assertive"
+      aria-atomic="true">
       <div class="winner-label">Winner!</div>
       <div class="winner-text" id="winnerText"></div>
     </div>
-    <div id="cooldownOverlay">Next spin in <span id="cooldownTimer">2</span>s</div>
+    <div id="cooldownOverlay" aria-live="polite">
+      Next spin in <span id="cooldownTimer">2</span>s
+    </div>
+    <!-- Screen reader announcements -->
+    <div
+      id="srAnnouncements"
+      class="sr-only"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true">
+    </div>
 
     <script type="importmap">
       {
