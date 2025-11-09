@@ -6,6 +6,7 @@ import { ConfettiSystem } from './effects/ConfettiSystem.js';
 import { SpinController } from './controllers/SpinController.js';
 import { AudioManager } from './utils/AudioManager.js';
 import { SpinHistory } from './utils/SpinHistory.js';
+import { Audience } from './components/Audience.js';
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(APP_CONFIG.scene.backgroundColor);
@@ -48,51 +49,34 @@ const wheel = new Wheel(scene);
 const spinController = new SpinController();
 const confettiSystem = new ConfettiSystem(scene);
 confettiSystem.setCamera(camera);
+const audience = new Audience(scene);
 
-// Audio system
 const audioManager = new AudioManager();
-
-// Spin history tracking
 const spinHistory = new SpinHistory(10);
 
-// Detect mobile device and adjust performance
 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-if (isMobile) {
-  // Reduce confetti particle count for better mobile performance
-  // This would need to be set before confetti creation, so we'll handle it in the click handler
-  console.log('Mobile device detected - performance optimizations enabled');
-}
 
-// Camera effects configuration
 const baseCameraZ = APP_CONFIG.scene.cameraPosition.z;
-const cameraZoomAmount = 2.0; // How much to zoom in during fast spin
-const cameraShakeAmount = 0.15; // Camera shake intensity
+const cameraZoomAmount = 2.0;
+const cameraShakeAmount = 0.15;
 let cameraShakeX = 0;
 let cameraShakeY = 0;
 
-// Mouse hover detection
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
 function onMouseMove(event) {
-  // Only do hover effects when not spinning
   if (spinController.isSpinning) {
     wheel.setHoveredSegment(-1);
     return;
   }
 
-  // Calculate mouse position in normalized device coordinates (-1 to +1)
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-  // Update raycaster
   raycaster.setFromCamera(mouse, camera);
-
-  // Check intersections with wheel segments
   const intersects = raycaster.intersectObjects(wheel.wheelGroup.children, true);
 
   if (intersects.length > 0) {
-    // Find which segment was hit
     for (let i = 0; i < wheel.segmentMeshes.length; i++) {
       const segmentMesh = wheel.segmentMeshes[i].mesh;
       if (intersects[0].object === segmentMesh) {
@@ -103,26 +87,24 @@ function onMouseMove(event) {
     }
   }
 
-  // No segment hovered
   wheel.setHoveredSegment(-1);
   canvas.style.cursor = 'default';
 }
 
 window.addEventListener('mousemove', onMouseMove);
 
-// Mobile touch gesture support
 let touchStartY = 0;
 let touchStartX = 0;
-const swipeThreshold = 50; // Minimum swipe distance in pixels
+const swipeThreshold = 50;
 
 canvas.addEventListener('touchstart', (event) => {
   touchStartY = event.touches[0].clientY;
   touchStartX = event.touches[0].clientX;
-  event.preventDefault(); // Prevent scrolling
+  event.preventDefault();
 }, { passive: false });
 
 canvas.addEventListener('touchmove', (event) => {
-  event.preventDefault(); // Prevent scrolling while touching wheel
+  event.preventDefault();
 }, { passive: false });
 
 canvas.addEventListener('touchend', (event) => {
@@ -133,14 +115,11 @@ canvas.addEventListener('touchend', (event) => {
   const deltaY = touchEndY - touchStartY;
   const deltaX = touchEndX - touchStartX;
 
-  // Detect swipe down gesture (anywhere on wheel)
   if (Math.abs(deltaY) > swipeThreshold && Math.abs(deltaY) > Math.abs(deltaX)) {
     if (deltaY > 0) {
-      // Swipe down detected - trigger spin
       if (!spinController.isSpinning && !spinButton.disabled) {
-        // Haptic feedback on mobile
         if (navigator.vibrate) {
-          navigator.vibrate(50); // 50ms vibration
+          navigator.vibrate(50);
         }
         handleSpinClick();
       }
@@ -165,10 +144,8 @@ if (!resultDisplay || !winnerText || !cooldownOverlay || !cooldownTimer || !srAn
   throw new Error('Result display elements not found');
 }
 
-// Screen reader announcement function
 function announceToScreenReader(message) {
   srAnnouncements.textContent = message;
-  // Clear after a delay so repeated announcements work
   setTimeout(() => {
     srAnnouncements.textContent = '';
   }, 1000);
@@ -209,7 +186,6 @@ function handleSpinClick() {
     return;
   }
 
-  // Initialize audio on first click (required by browsers)
   audioManager.init();
   audioManager.playClick();
 
@@ -218,27 +194,16 @@ function handleSpinClick() {
   spinButton.setAttribute('aria-label', 'Wheel is spinning...');
   resultDisplay.classList.remove('show');
 
-  // Announce to screen readers
   announceToScreenReader('Spinning the wheel...');
-
-  // Play whoosh sound when spin starts
   audioManager.playWhoosh();
 
   spinController.startSpin((finalAngle) => {
     const winningSegment = wheel.getCurrentSegment();
-    // Create confetti using the winning segment's color for a cohesive effect
     confettiSystem.createConfetti([winningSegment.color]);
-
-    // Play fanfare when winner is announced
     audioManager.playFanfare();
-
-    // Announce winner to screen readers
     announceToScreenReader(`Winner: ${winningSegment.label}`);
 
-    // Add to history
     spinHistory.addSpin(winningSegment);
-
-    // Log statistics to console
     const stats = spinHistory.getStatistics();
     console.log('Spin History Stats:', stats);
     console.log('Recent spins:', spinHistory.getHistory().map(h => h.label));
@@ -257,9 +222,7 @@ function handleSpinClick() {
 
 spinButton.addEventListener('click', handleSpinClick);
 
-// Keyboard controls
 window.addEventListener('keydown', (event) => {
-  // Space or Enter key to spin
   if (event.key === ' ' || event.key === 'Enter') {
     if (document.activeElement === spinButton || document.activeElement === document.body) {
       event.preventDefault();
@@ -271,23 +234,18 @@ window.addEventListener('keydown', (event) => {
 });
 
 let animationTime = 0;
-let lastSegmentIndex = -1; // Track segment changes for tick sounds
+let lastSegmentIndex = -1;
 
 function updateCameraEffects(velocity) {
-  // Normalize velocity (max velocity around 25 rad/s)
   const normalizedVelocity = Math.min(Math.abs(velocity) / 25, 1.0);
-
-  // Zoom in based on velocity (faster = closer)
   const targetZ = baseCameraZ - (normalizedVelocity * cameraZoomAmount);
-  camera.position.z += (targetZ - camera.position.z) * 0.1; // Smooth interpolation
+  camera.position.z += (targetZ - camera.position.z) * 0.1;
 
-  // Camera shake at high velocities
   if (normalizedVelocity > 0.5) {
-    const shakeIntensity = (normalizedVelocity - 0.5) * 2; // 0 to 1 range above threshold
+    const shakeIntensity = (normalizedVelocity - 0.5) * 2;
     cameraShakeX = (Math.random() - 0.5) * cameraShakeAmount * shakeIntensity;
     cameraShakeY = (Math.random() - 0.5) * cameraShakeAmount * shakeIntensity;
   } else {
-    // Smoothly return to center when not shaking
     cameraShakeX *= 0.8;
     cameraShakeY *= 0.8;
   }
@@ -308,23 +266,22 @@ function animate() {
   const angle = spinController.update();
   const velocity = spinController.angularVelocity;
 
-  // Play tick sounds when wheel is slowing down and crosses segments
   if (spinController.isSpinning && Math.abs(velocity) < 5) {
     const currentSegment = wheel.getCurrentSegment();
     if (currentSegment.index !== lastSegmentIndex) {
       lastSegmentIndex = currentSegment.index;
-      // Pitch increases as wheel slows (creates anticipation)
       const pitch = 1.0 + (1.0 - Math.abs(velocity) / 5) * 0.5;
       audioManager.playTick(pitch);
     }
   } else if (!spinController.isSpinning) {
-    lastSegmentIndex = -1; // Reset when not spinning
+    lastSegmentIndex = -1;
   }
 
   wheel.updateRotation(angle);
   wheel.updateLEDs(animationTime, velocity);
   wheel.updateHoverEffects();
   updateCameraEffects(velocity);
+  audience.animate(animationTime);
   confettiSystem.update();
   renderer.render(scene, camera);
 }

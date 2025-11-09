@@ -8,12 +8,36 @@
 
 ## Features
 
+### Core Wheel Features
 - **Halloween-Themed Segments**: 8 spooky activities (Haunted House, Pumpkin Patch, Witch's Brew, Ghost Town, Blood Moon, Candy Corn, Black Cat, Graveyard)
 - **Winner Display**: Animated result card that shows the winning segment with matching colors
 - **Cooldown Timer**: Visual countdown showing when you can spin again
 - **Physics-Based Spinning**: Custom spin controller with realistic deceleration and momentum
-- **LED Rim Effects**: Animated LED lights around the wheel perimeter with pulsing Halloween colors
-- **Confetti System**: Particle-based confetti celebration when the wheel stops
+- **3D Depth & Perspective**: Extruded wheel geometry with beveled edges and dynamic shadow
+
+### Visual Effects
+- **LED Chase Effects**: Animated LED lights that rotate and brighten during wheel spin
+- **Confetti System**: Particle-based confetti celebration in winning segment colors
+- **Dynamic Camera**: Camera zooms in during fast spins and shakes at high velocities
+- **Segment Hover Effects**: Interactive segments that scale and glow on mouse hover
+- **Animated Audience**: 6 people watching the wheel from the same perspective, swaying gently
+
+### Audio System
+- **Procedural Sound Effects**: Web Audio API generates all sounds without audio files
+- **Click Sound**: Button press feedback
+- **Whoosh Sound**: Spin start effect
+- **Tick Sounds**: Variable pitch ticking as wheel slows down
+- **Fanfare**: Winner announcement chord progression
+
+### Accessibility & Controls
+- **Keyboard Support**: Space or Enter to spin the wheel
+- **Mobile Touch Gestures**: Swipe down to spin with haptic feedback
+- **ARIA Labels**: Full screen reader support
+- **Reduced Motion**: Respects prefers-reduced-motion settings
+- **Semantic HTML**: Proper roles and live regions for announcements
+
+### Data & Performance
+- **Spin History Tracking**: Tracks last 10 spins with statistics in localStorage
 - **Smooth Animations**: 60fps rendering with optimized Three.js performance
 - **Responsive Design**: Adapts to different screen sizes and orientations
 - **Customizable**: Easy to modify segments, colors, and wheel configuration
@@ -24,8 +48,12 @@
 ## Technologies Used
 
 - **Graphics**: [Three.js](https://threejs.org/) - 3D graphics library for WebGL
+- **Audio**: [Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API) - Procedural sound generation
 - **Physics**: Custom physics-based spin controller with realistic deceleration
 - **Particle Effects**: Custom confetti system using Three.js geometries
+- **Storage**: localStorage for persistent spin history tracking
+- **Accessibility**: ARIA attributes, keyboard navigation, screen reader support
+- **Mobile**: Touch events API with haptic feedback
 - **Module System**: Native ES6 modules with modern import/export syntax
 - **Code Quality**: ESLint with modern rules, Prettier for formatting
 
@@ -40,40 +68,53 @@ graph TD
     A[main.js] --> B[Wheel Component]
     A --> C[SpinController]
     A --> D[ConfettiSystem]
-    A --> E[Scene Config]
+    A --> E[Audience Component]
+    A --> F[AudioManager]
+    A --> G[SpinHistory]
+    A --> H[Scene Config]
 
-    B --> F[Wheel Geometry]
-    B --> G[LED Lights]
-    B --> H[Pointer]
-    B --> I[Text Labels]
+    B --> I[Wheel Geometry]
+    B --> J[LED Lights]
+    B --> K[Pointer]
+    B --> L[Text Labels]
+    B --> M[Hover Effects]
 
-    C --> J[Physics Engine]
-    C --> K[Animation Loop]
+    C --> N[Physics Engine]
+    C --> O[Animation Loop]
 
-    D --> L[Particle System]
-    D --> M[Confetti Particles]
+    D --> P[Particle System]
+    D --> Q[Confetti Particles]
 
-    N[Utils] --> O[Crypto Utils]
-    N --> P[Math Utils]
+    E --> R[Audience Members]
+    E --> S[Sway Animation]
 
-    Q[Config] --> R[Constants]
-    Q --> S[Wheel Config]
-    Q --> T[Physics Config]
-    Q --> U[Scene Config]
+    F --> T[Procedural Sounds]
+    F --> U[Web Audio Context]
 
-    B --> N
-    C --> N
-    D --> N
-    A --> Q
+    G --> V[localStorage]
+    G --> W[Statistics]
 
-    E --> M[WebGL Renderer]
-    F --> N[Segment Colors]
-    F --> O[Tech Labels]
+    X[Utils] --> Y[Crypto Utils]
+    X --> Z[Math Utils]
+    X --> AA[Easing Functions]
+
+    AB[Config] --> AC[Constants]
+    AB --> AD[Wheel Config]
+    AB --> AE[Physics Config]
+    AB --> AF[Scene Config]
+
+    B --> X
+    C --> X
+    D --> X
+    A --> AB
 
     style A fill:#e1f5fe
     style B fill:#f3e5f5
     style C fill:#e8f5e8
     style D fill:#fff3e0
+    style E fill:#ffe0f0
+    style F fill:#f0ffe0
+    style G fill:#e0f0ff
 ```
 
 ---
@@ -247,18 +288,24 @@ src/
 
 ---
 
-## Project Structure
+## Usage
 
-```
-src/
-├── main.js                 # Entry point and scene setup
-├── components/
-│   └── Wheel.js           # Main wheel component with segments and LEDs
-├── controllers/
-│   └── SpinController.js  # Physics-based spinning logic
-└── effects/
-    └── ConfettiSystem.js  # Particle system for celebrations
-```
+### Controls
+
+- **Mouse Click**: Click the "SPIN THE WHEEL!" button to spin
+- **Keyboard**: Press Space or Enter to spin the wheel
+- **Mobile**: Swipe down to spin (with haptic feedback)
+- **Hover**: Hover over segments to see them highlight and glow
+
+### Viewing Spin History
+
+Open the browser console to see spin statistics after each spin:
+- Total number of spins
+- Count of each segment
+- Most and least common results
+- Recent spin history
+
+History is automatically saved to localStorage and persists across sessions.
 
 ## Contributing
 

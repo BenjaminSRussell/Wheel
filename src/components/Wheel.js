@@ -47,10 +47,9 @@ export class Wheel {
         segment.color,
         segment.label,
       );
-      // Store reference to the mesh (first child is the actual segment mesh)
       this.segmentMeshes.push({
         group: segmentGroup,
-        mesh: segmentGroup.children[0], // The segment mesh
+        mesh: segmentGroup.children[0],
         originalScale: 1.0,
         targetScale: 1.0,
       });
@@ -72,7 +71,6 @@ export class Wheel {
     shape.lineTo(0, 0);
     shape.closePath();
 
-    // Create 3D extrusion for depth effect
     const extrudeSettings = {
       depth: SCENE_CONFIG.wheelDepth,
       bevelEnabled: true,
@@ -82,7 +80,6 @@ export class Wheel {
     };
 
     const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-    // Center the geometry in Z so it's symmetric around Z=0
     geometry.translate(0, 0, -SCENE_CONFIG.wheelDepth / 2);
 
     const material = new THREE.MeshLambertMaterial({
@@ -145,7 +142,6 @@ export class Wheel {
       CONST.MATERIAL_DEPTH_TEST_OFFSET,
     );
     sprite.scale.set(CONST.SPRITE_SCALE_X, CONST.SPRITE_SCALE_Y, CONST.SPRITE_SCALE_Z);
-    // Rotate sprite to align with segment radially (add 90° to orient text outward from center)
     sprite.rotation.z = midAngle + Math.PI / 2;
 
     group.add(sprite);
@@ -215,7 +211,6 @@ export class Wheel {
   }
 
   _buildShadow() {
-    // Create a circular shadow beneath the wheel for depth perception
     const shadowGeometry = new THREE.CircleGeometry(this.config.outerRadius * 1.1, 64);
     const shadowMaterial = new THREE.MeshBasicMaterial({
       color: 0x000000,
@@ -225,9 +220,8 @@ export class Wheel {
     });
 
     const shadow = new THREE.Mesh(shadowGeometry, shadowMaterial);
-    // Position shadow slightly behind wheel and below it
     shadow.position.set(0, -0.5, -SCENE_CONFIG.wheelDepth / 2 - 0.1);
-    shadow.rotation.x = -Math.PI / 2; // Lay flat
+    shadow.rotation.x = -Math.PI / 2;
 
     this.scene.add(shadow);
     this.shadow = shadow;
@@ -238,23 +232,13 @@ export class Wheel {
   }
 
   updateLEDs(time, velocity = 0) {
-    // Normalize velocity for effects (max expected velocity ~25 rad/s)
     const normalizedVelocity = Math.min(Math.abs(velocity) / 25, 1.0);
-
-    // Chase effect: LEDs rotate during spin (higher velocity = faster rotation)
-    const chaseOffset = time * normalizedVelocity * 10; // Multiplier for chase speed
-
-    // Increase base intensity during high-speed spin for dramatic effect
-    const velocityBoost = normalizedVelocity * 0.5; // Up to 50% brighter
+    const chaseOffset = time * normalizedVelocity * 10;
+    const velocityBoost = normalizedVelocity * 0.5;
 
     this.ledLights.forEach((led, index) => {
-      // Create phase offset for each LED to create wave effect around the wheel
       const phase = (index / this.ledLights.length) * Math.PI * 2;
-
-      // Combine pulsing wave with chase rotation
       const pulse = Math.sin(time * CONST.LED_PULSE_SPEED_MULTIPLIER + phase + chaseOffset) * CONST.LED_PULSE_AMOUNT + CONST.LED_BASE_INTENSITY;
-
-      // Apply velocity boost
       led.mesh.material.emissiveIntensity = Math.min(pulse + velocityBoost, 2.0);
     });
   }
@@ -264,21 +248,16 @@ export class Wheel {
    * @returns {Object} Segment information including index, label, color, and angles
    */
   getCurrentSegment() {
-    const pointerAngle = CONST.POINTER_ANGLE_RAD; // Pointer at top of wheel
+    const pointerAngle = CONST.POINTER_ANGLE_RAD;
     const wheelAngle = this.wheelGroup.rotation.z;
     const twoPi = 2 * Math.PI;
 
-    // Check each segment to see if pointer is within its boundaries
-    // Angle normalization handles wraparound at 0/2π boundary
     for (const [index, segment] of this.segments.entries()) {
-      // Normalize angles to [0, 2π) range to handle wraparound
       const startAngle =
         (((segment.startRad + wheelAngle) % twoPi) + twoPi) % twoPi;
       const endAngle =
         (((segment.endRad + wheelAngle) % twoPi) + twoPi) % twoPi;
 
-      // Check if pointer is within segment boundaries
-      // Handle wraparound case where segment crosses 0° boundary (e.g., starts at 350° and ends at 10°)
       const isInSegment =
         startAngle <= endAngle
           ? pointerAngle >= startAngle && pointerAngle < endAngle
@@ -297,7 +276,6 @@ export class Wheel {
       }
     }
 
-    // Fallback: return first segment if no match found (should rarely happen)
     return {
       index: 0,
       label: this.segments[0]?.label ?? "Unknown",
@@ -315,13 +293,11 @@ export class Wheel {
    */
   setHoveredSegment(segmentIndex) {
     if (segmentIndex === this.hoveredSegmentIndex) {
-      return; // No change
+      return;
     }
 
-    // Reset previous hovered segment
     if (this.hoveredSegmentIndex >= 0 && this.hoveredSegmentIndex < this.segmentMeshes.length) {
       this.segmentMeshes[this.hoveredSegmentIndex].targetScale = 1.0;
-      // Reset emissive glow
       const mesh = this.segmentMeshes[this.hoveredSegmentIndex].mesh;
       if (mesh && mesh.material) {
         mesh.material.emissive.multiplyScalar(0.1 / Math.max(mesh.material.emissive.r, mesh.material.emissive.g, mesh.material.emissive.b, 0.1));
@@ -330,24 +306,17 @@ export class Wheel {
 
     this.hoveredSegmentIndex = segmentIndex;
 
-    // Highlight new hovered segment
     if (segmentIndex >= 0 && segmentIndex < this.segmentMeshes.length) {
-      this.segmentMeshes[segmentIndex].targetScale = 1.05; // Slight scale up
-      // Increase emissive glow
+      this.segmentMeshes[segmentIndex].targetScale = 1.05;
       const mesh = this.segmentMeshes[segmentIndex].mesh;
       if (mesh && mesh.material) {
-        mesh.material.emissive.multiplyScalar(3.0); // Brighter glow
+        mesh.material.emissive.multiplyScalar(3.0);
       }
     }
   }
 
-  /**
-   * Update hover effects (smooth animations)
-   * Call this every frame
-   */
   updateHoverEffects() {
     this.segmentMeshes.forEach((segmentData) => {
-      // Smooth scale interpolation
       const currentScale = segmentData.group.scale.x;
       const newScale = currentScale + (segmentData.targetScale - currentScale) * 0.15;
       segmentData.group.scale.set(newScale, newScale, 1);
