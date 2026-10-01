@@ -67,6 +67,7 @@ function handleSpinClick() {
 }
 
 spinButton.addEventListener('click', handleSpinClick);
+canvas.addEventListener('click', handleSpinClick);
 
 let animationTime = 0;
 
