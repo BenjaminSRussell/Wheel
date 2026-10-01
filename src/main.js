@@ -47,6 +47,11 @@ if (!spinButton) {
   throw new Error('Spin button element not found');
 }
 
+const announcer = document.getElementById('announcer');
+if (!announcer) {
+  throw new Error('Announcer element not found');
+}
+
 function handleSpinClick() {
   if (spinController.isSpinning || spinButton.disabled) {
     return;
@@ -54,14 +59,18 @@ function handleSpinClick() {
 
   spinButton.disabled = true;
   spinButton.textContent = APP_CONFIG.ui.buttonDisabledText;
+  spinButton.setAttribute('aria-busy', 'true');
+  announcer.textContent = 'Spinning…';
 
   spinController.startSpin((finalAngle) => {
-    wheel.getCurrentSegment();
+    const segment = wheel.getCurrentSegment();
     confettiSystem.createConfetti();
+    announcer.textContent = `You landed on ${segment.label}`;
 
     setTimeout(() => {
       spinButton.disabled = false;
       spinButton.textContent = APP_CONFIG.ui.buttonText;
+      spinButton.setAttribute('aria-busy', 'false');
     }, APP_CONFIG.ui.buttonCooldown);
   });
 }

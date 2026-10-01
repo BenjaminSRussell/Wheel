@@ -176,11 +176,20 @@
           min-width: 200px;
         }
       }
+
+      #announcer {
+        position: absolute;
+        left: -9999px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+      }
     </style>
   </head>
   <body>
-    <canvas id="c"></canvas>
-    <button id="spinButton">SPIN THE WHEEL!</button>
+    <div id="announcer" aria-live="polite" aria-atomic="true"></div>
+    <canvas id="c" aria-label="Decision wheel"></canvas>
+    <button id="spinButton" aria-busy="false">SPIN THE WHEEL!</button>
 
     <script type="importmap">
       {
