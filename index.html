@@ -176,11 +176,90 @@
           min-width: 200px;
         }
       }
+
+      #fallback {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+          ellipse at center,
+          #0a0a0a 0%,
+          #1a0a00 100%
+        );
+        z-index: 10000;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      #fallback.visible {
+        display: flex;
+      }
+
+      #fallback-content {
+        max-width: 600px;
+        text-align: center;
+      }
+
+      #fallback-message {
+        font-size: 1.5rem;
+        margin-bottom: 30px;
+        color: var(--text-primary);
+        line-height: 1.6;
+      }
+
+      #fallback-segments {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+      }
+
+      .fallback-segment {
+        padding: 20px;
+        border-radius: 10px;
+        color: white;
+        font-weight: bold;
+        text-align: center;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+        cursor: default;
+      }
+
+      .fallback-segment:hover {
+        border-color: rgba(255, 255, 255, 0.6);
+        transform: scale(1.05);
+      }
+
+      #fallback-result {
+        margin-top: 20px;
+        font-size: 1.3rem;
+        font-weight: bold;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
     </style>
   </head>
   <body>
     <canvas id="c"></canvas>
     <button id="spinButton">SPIN THE WHEEL!</button>
+
+    <div id="fallback">
+      <div id="fallback-content">
+        <h1 class="title">Decision Wheel</h1>
+        <p id="fallback-message">
+          WebGL is not supported on this device. Please spin to pick a random decision.
+        </p>
+        <div id="fallback-segments"></div>
+        <div id="fallback-result"></div>
+      </div>
+    </div>
 
     <script type="importmap">
       {

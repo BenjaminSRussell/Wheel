@@ -33,21 +33,75 @@ if (!canvas) {
   throw new Error('Canvas element with id "c" not found');
 }
 
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-const wheel = new Wheel(scene);
-const spinController = new SpinController();
-const confettiSystem = new ConfettiSystem(scene);
-confettiSystem.setCamera(camera);
-
 const spinButton = document.getElementById('spinButton');
 if (!spinButton) {
   throw new Error('Spin button element not found');
 }
 
+let renderer;
+let wheel;
+let spinController;
+let confettiSystem;
+let webglAvailable = true;
+
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  wheel = new Wheel(scene);
+  spinController = new SpinController();
+  confettiSystem = new ConfettiSystem(scene);
+  confettiSystem.setCamera(camera);
+} catch (error) {
+  console.error('WebGL initialization failed:', error);
+  webglAvailable = false;
+  setupFallbackUI();
+}
+
+function setupFallbackUI() {
+  const fallbackDiv = document.getElementById('fallback');
+  const fallbackSegments = document.getElementById('fallback-segments');
+  const canvas = document.querySelector('#c');
+
+  if (canvas) {
+    canvas.style.display = 'none';
+  }
+
+  fallbackDiv.classList.add('visible');
+
+  // Create segment cards
+  APP_CONFIG.wheel.segments.forEach((segment) => {
+    const segmentDiv = document.createElement('div');
+    segmentDiv.className = 'fallback-segment';
+    segmentDiv.style.backgroundColor = `#${segment.color.toString(16).padStart(6, '0')}`;
+    segmentDiv.textContent = segment.label;
+    fallbackSegments.appendChild(segmentDiv);
+  });
+}
+
 function handleSpinClick() {
+  if (!webglAvailable) {
+    // Fallback mode: pick a random segment
+    const segments = APP_CONFIG.wheel.segments;
+    const randomIndex = Math.floor(Math.random() * segments.length);
+    const selectedSegment = segments[randomIndex];
+
+    spinButton.disabled = true;
+    spinButton.textContent = APP_CONFIG.ui.buttonDisabledText;
+
+    const resultDiv = document.getElementById('fallback-result');
+    resultDiv.style.color = `#${selectedSegment.color.toString(16).padStart(6, '0')}`;
+    resultDiv.textContent = `You got: ${selectedSegment.label}`;
+
+    setTimeout(() => {
+      spinButton.disabled = false;
+      spinButton.textContent = APP_CONFIG.ui.buttonText;
+    }, APP_CONFIG.ui.buttonCooldown);
+
+    return;
+  }
+
   if (spinController.isSpinning || spinButton.disabled) {
     return;
   }
@@ -73,7 +127,7 @@ let animationTime = 0;
 function animate() {
   requestAnimationFrame(animate);
 
-  if (document.hidden) {
+  if (!webglAvailable || document.hidden) {
     return;
   }
 
@@ -86,10 +140,15 @@ function animate() {
   renderer.render(scene, camera);
 }
 
-animate();
+if (webglAvailable) {
+  animate();
+}
 
 let resizeTimeout;
 function handleResize() {
+  if (!webglAvailable) {
+    return;
+  }
   clearTimeout(resizeTimeout);
   resizeTimeout = setTimeout(() => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -105,8 +164,10 @@ function cleanup() {
   if (resizeTimeout) {
     clearTimeout(resizeTimeout);
   }
-  renderer.dispose();
-  scene.clear();
+  if (webglAvailable && renderer) {
+    renderer.dispose();
+    scene.clear();
+  }
 }
 
 window.addEventListener('beforeunload', cleanup);
