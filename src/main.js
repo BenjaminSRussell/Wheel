@@ -47,6 +47,43 @@ if (!spinButton) {
   throw new Error('Spin button element not found');
 }
 
+const winnerOverlay = document.getElementById('winnerOverlay');
+const winnerSegmentName = document.getElementById('winnerSegmentName');
+const spinAgainButton = document.getElementById('spinAgainButton');
+if (!winnerOverlay || !winnerSegmentName || !spinAgainButton) {
+  throw new Error('Winner modal elements not found');
+}
+
+let previouslyFocusedElement = null;
+
+function showWinnerModal(segmentLabel) {
+  // Store the previously focused element
+  previouslyFocusedElement = document.activeElement;
+
+  // Update the modal with the winning segment
+  winnerSegmentName.textContent = segmentLabel;
+
+  // Show the modal
+  winnerOverlay.classList.add('show');
+  winnerOverlay.setAttribute('aria-hidden', 'false');
+
+  // Move focus to the "Spin Again" button for keyboard navigation
+  spinAgainButton.focus();
+}
+
+function closeWinnerModal() {
+  // Hide the modal
+  winnerOverlay.classList.remove('show');
+  winnerOverlay.setAttribute('aria-hidden', 'true');
+
+  // Restore focus to the previously focused element (or the spin button)
+  if (previouslyFocusedElement && previouslyFocusedElement !== document.body) {
+    previouslyFocusedElement.focus();
+  } else {
+    spinButton.focus();
+  }
+}
+
 function handleSpinClick() {
   if (spinController.isSpinning || spinButton.disabled) {
     return;
@@ -56,8 +93,11 @@ function handleSpinClick() {
   spinButton.textContent = APP_CONFIG.ui.buttonDisabledText;
 
   spinController.startSpin((finalAngle) => {
-    wheel.getCurrentSegment();
+    const winningSegment = wheel.getCurrentSegment();
     confettiSystem.createConfetti();
+
+    // Show the winner announcement modal
+    showWinnerModal(winningSegment.label);
 
     setTimeout(() => {
       spinButton.disabled = false;
@@ -67,6 +107,14 @@ function handleSpinClick() {
 }
 
 spinButton.addEventListener('click', handleSpinClick);
+spinAgainButton.addEventListener('click', closeWinnerModal);
+
+// Handle Escape key to close the modal
+window.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && winnerOverlay.classList.contains('show')) {
+    closeWinnerModal();
+  }
+});
 
 let animationTime = 0;
 
