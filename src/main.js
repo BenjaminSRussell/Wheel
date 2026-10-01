@@ -94,6 +94,7 @@ function handleResize() {
   resizeTimeout = setTimeout(() => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
   }, APP_CONFIG.animation.resizeDebounceMs);
 }
