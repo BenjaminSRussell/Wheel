@@ -47,6 +47,10 @@ if (!spinButton) {
   throw new Error('Spin button element not found');
 }
 
+function prefersReducedMotion() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 function handleSpinClick() {
   if (spinController.isSpinning || spinButton.disabled) {
     return;
@@ -57,7 +61,9 @@ function handleSpinClick() {
 
   spinController.startSpin((finalAngle) => {
     wheel.getCurrentSegment();
-    confettiSystem.createConfetti();
+    if (!prefersReducedMotion()) {
+      confettiSystem.createConfetti();
+    }
 
     setTimeout(() => {
       spinButton.disabled = false;
