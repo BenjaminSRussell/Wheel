@@ -54,6 +54,7 @@ function handleSpinClick() {
 
   spinButton.disabled = true;
   spinButton.textContent = APP_CONFIG.ui.buttonDisabledText;
+  spinButton.setAttribute('aria-disabled', 'true');
 
   spinController.startSpin((finalAngle) => {
     wheel.getCurrentSegment();
@@ -62,6 +63,7 @@ function handleSpinClick() {
     setTimeout(() => {
       spinButton.disabled = false;
       spinButton.textContent = APP_CONFIG.ui.buttonText;
+      spinButton.setAttribute('aria-disabled', 'false');
     }, APP_CONFIG.ui.buttonCooldown);
   });
 }
