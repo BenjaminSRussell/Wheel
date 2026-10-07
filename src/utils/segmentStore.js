@@ -1,7 +1,7 @@
 /** Persist editable segments + spin history (#23). */
 
-export const STORAGE_KEY = "wheel.segments.v1";
-export const HISTORY_KEY = "wheel.spinHistory.v1";
+export const STORAGE_KEY = 'wheel.segments.v1';
+export const HISTORY_KEY = 'wheel.spinHistory.v1';
 export const MIN_SEGMENTS = 2;
 export const MAX_HISTORY = 50;
 
@@ -12,14 +12,14 @@ export function serializeSegments(segments) {
 export function deserializeSegments(raw, _fallback) {
   const parsed = JSON.parse(raw);
   if (!parsed || !Array.isArray(parsed.segments)) {
-    throw new Error("invalid segments payload");
+    throw new Error('invalid segments payload');
   }
   if (parsed.segments.length < MIN_SEGMENTS) {
     throw new Error(`need at least ${MIN_SEGMENTS} segments`);
   }
   for (const s of parsed.segments) {
-    if (!s || typeof s.label !== "string" || typeof s.color !== "number") {
-      throw new Error("segment requires label:string and color:number");
+    if (!s || typeof s.label !== 'string' || typeof s.color !== 'number') {
+      throw new Error('segment requires label:string and color:number');
     }
   }
   return parsed.segments;
@@ -53,7 +53,7 @@ export function importPreset(raw) {
 export function pushSpinHistory(label, storage = globalThis.localStorage) {
   let hist = [];
   try {
-    hist = JSON.parse(storage.getItem(HISTORY_KEY) || "[]");
+    hist = JSON.parse(storage.getItem(HISTORY_KEY) || '[]');
     if (!Array.isArray(hist)) hist = [];
   } catch {
     hist = [];
@@ -66,7 +66,7 @@ export function pushSpinHistory(label, storage = globalThis.localStorage) {
 
 export function loadSpinHistory(storage = globalThis.localStorage) {
   try {
-    const hist = JSON.parse(storage.getItem(HISTORY_KEY) || "[]");
+    const hist = JSON.parse(storage.getItem(HISTORY_KEY) || '[]');
     return Array.isArray(hist) ? hist : [];
   } catch {
     return [];
