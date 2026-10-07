@@ -1,16 +1,12 @@
-import * as THREE from "three";
+import * as THREE from 'three';
 
-import { WHEEL_CONFIG } from "../config/appConfig.js";
-import {
-  auditSegmentContrast,
-  bestTextColor,
-  toCssHex,
-} from "../utils/contrast.js";
+import { WHEEL_CONFIG } from '../config/appConfig.js';
+import { auditSegmentContrast, bestTextColor, toCssHex } from '../utils/contrast.js';
 
 export class Wheel {
   constructor(scene, config = {}) {
     if (!scene) {
-      throw new Error("Scene is required");
+      throw new Error('Scene is required');
     }
 
     this.scene = scene;
@@ -62,10 +58,7 @@ export class Wheel {
 
     for (let i = 0; i <= 32; i++) {
       const angle = startAngle + (endAngle - startAngle) * (i / 32);
-      shape.lineTo(
-        Math.cos(angle) * outerRadius,
-        Math.sin(angle) * outerRadius,
-      );
+      shape.lineTo(Math.cos(angle) * outerRadius, Math.sin(angle) * outerRadius);
     }
     shape.lineTo(0, 0);
     shape.closePath();
@@ -87,15 +80,7 @@ export class Wheel {
     const group = new THREE.Group();
     group.add(mesh);
     group.add(line);
-    this._addTextLabel(
-      group,
-      label,
-      startAngle,
-      endAngle,
-      innerRadius,
-      outerRadius,
-      color,
-    );
+    this._addTextLabel(group, label, startAngle, endAngle, innerRadius, outerRadius, color);
 
     return group;
   }
@@ -109,19 +94,17 @@ export class Wheel {
     outerRadius,
     segmentColor = 0x000000,
   ) {
-    const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d");
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
     canvas.width = 256;
     canvas.height = 64;
 
     context.font = 'bold 36px "Playfair Display", "Times New Roman", serif';
-    context.textAlign = "center";
-    context.textBaseline = "middle";
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
     // Label color follows the segment so light segments get dark text.
     const textColor = bestTextColor(segmentColor);
-    context.strokeStyle = toCssHex(
-      textColor === 0xffffff ? 0x000000 : 0xffffff,
-    );
+    context.strokeStyle = toCssHex(textColor === 0xffffff ? 0x000000 : 0xffffff);
     context.lineWidth = 3;
     context.strokeText(text, canvas.width / 2, canvas.height / 2);
     context.fillStyle = toCssHex(textColor);
@@ -139,11 +122,7 @@ export class Wheel {
 
     const midAngle = (startAngle + endAngle) / 2;
     const labelRadius = outerRadius * 0.8;
-    sprite.position.set(
-      Math.cos(midAngle) * labelRadius,
-      Math.sin(midAngle) * labelRadius,
-      0.1,
-    );
+    sprite.position.set(Math.cos(midAngle) * labelRadius, Math.sin(midAngle) * labelRadius, 0.1);
     sprite.scale.set(1.0, 0.3, 1);
     sprite.rotation.z = midAngle + Math.PI / 2;
 
@@ -165,11 +144,7 @@ export class Wheel {
       });
 
       const led = new THREE.Mesh(geometry, material);
-      led.position.set(
-        Math.cos(angle) * ledRadius,
-        Math.sin(angle) * ledRadius,
-        0.1,
-      );
+      led.position.set(Math.cos(angle) * ledRadius, Math.sin(angle) * ledRadius, 0.1);
 
       this.wheelGroup.add(led);
       this.ledLights.push({ mesh: led, phase: i, angle });
@@ -177,8 +152,7 @@ export class Wheel {
   }
 
   _buildPointer() {
-    const { pointerLength, pointerWidth, pointerColor, pointerPosition } =
-      this.config;
+    const { pointerLength, pointerWidth, pointerColor, pointerPosition } = this.config;
 
     const arrowShape = new THREE.Shape();
     const halfWidth = pointerWidth / 2;
@@ -199,11 +173,7 @@ export class Wheel {
 
     const pointerGroup = new THREE.Group();
     pointerGroup.add(arrow);
-    pointerGroup.position.set(
-      pointerPosition.x,
-      pointerPosition.y,
-      pointerPosition.z,
-    );
+    pointerGroup.position.set(pointerPosition.x, pointerPosition.y, pointerPosition.z);
 
     this.scene.add(pointerGroup);
     this.pointer = pointerGroup;
@@ -217,8 +187,8 @@ export class Wheel {
     const baseIntensity = 0.8;
     const reduceMotion =
       globalThis.window !== undefined &&
-      globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const pulseOn = typeof pulse === "boolean" ? pulse : !reduceMotion;
+      globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const pulseOn = typeof pulse === 'boolean' ? pulse : !reduceMotion;
     const pulseAmount = pulseOn ? 0.3 : 0;
 
     this.ledLights.forEach((led, index) => {
@@ -234,10 +204,8 @@ export class Wheel {
     const twoPi = 2 * Math.PI;
 
     for (const [index, segment] of this.segments.entries()) {
-      const startAngle =
-        (((segment.startRad + wheelAngle) % twoPi) + twoPi) % twoPi;
-      const endAngle =
-        (((segment.endRad + wheelAngle) % twoPi) + twoPi) % twoPi;
+      const startAngle = (((segment.startRad + wheelAngle) % twoPi) + twoPi) % twoPi;
+      const endAngle = (((segment.endRad + wheelAngle) % twoPi) + twoPi) % twoPi;
 
       const isInSegment =
         startAngle <= endAngle
@@ -258,7 +226,7 @@ export class Wheel {
 
     return {
       index: 0,
-      label: this.segments[0]?.label ?? "Unknown",
+      label: this.segments[0]?.label ?? 'Unknown',
       wheelAngle,
       pointerAngle,
       segmentStart: 0,

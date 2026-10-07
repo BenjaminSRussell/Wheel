@@ -1,5 +1,5 @@
 /** Weighted segment selection (#24). */
-import { cryptoRandomFloat } from "./crypto.js";
+import { cryptoRandomFloat } from './crypto.js';
 
 export function normalizeWeights(weights) {
   return weights.map((w) => (Number.isFinite(w) && w > 0 ? w : 0));
@@ -13,8 +13,7 @@ export function pickWeightedIndex(weights, rand = cryptoRandomFloat) {
   const clean = normalizeWeights(weights);
   const total = clean.reduce((a, b) => a + b, 0);
   if (clean.length === 0) return -1;
-  if (total <= 0)
-    return Math.min(clean.length - 1, Math.floor(rand() * clean.length));
+  if (total <= 0) return Math.min(clean.length - 1, Math.floor(rand() * clean.length));
   let r = rand() * total;
   for (const [i, w] of clean.entries()) {
     if (r < w) return i;

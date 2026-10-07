@@ -1,12 +1,7 @@
-import { PHYSICS_CONFIG } from "../config/appConfig.js";
-import { cryptoRandomFloat } from "../utils/crypto.js";
-import {
-  TWO_PI,
-  normalizeAngleRad,
-  degToRad,
-  radToDeg,
-} from "../utils/math.js";
-import { angleForSegmentIndex, pickWeightedIndex } from "../utils/weighted.js";
+import { PHYSICS_CONFIG } from '../config/appConfig.js';
+import { cryptoRandomFloat } from '../utils/crypto.js';
+import { TWO_PI, normalizeAngleRad, degToRad, radToDeg } from '../utils/math.js';
+import { angleForSegmentIndex, pickWeightedIndex } from '../utils/weighted.js';
 
 export class SpinController {
   constructor({ initialAngle = 0, friction = PHYSICS_CONFIG.friction } = {}) {
@@ -46,8 +41,7 @@ export class SpinController {
     }
 
     const { minTurns, maxTurns } = PHYSICS_CONFIG;
-    const extraTurns =
-      minTurns + Math.floor(cryptoRandomFloat() * (maxTurns - minTurns));
+    const extraTurns = minTurns + Math.floor(cryptoRandomFloat() * (maxTurns - minTurns));
     this._totalRotationNeeded = deltaToTarget + extraTurns * TWO_PI;
     this._targetAngleAbsolute = this.currentAngle + this._totalRotationNeeded;
 
@@ -56,11 +50,10 @@ export class SpinController {
     this.angularVelocity = initialVelocity;
     this._maxVelocity =
       PHYSICS_CONFIG.maxVelocityMin +
-      cryptoRandomFloat() *
-        (PHYSICS_CONFIG.maxVelocityMax - PHYSICS_CONFIG.maxVelocityMin);
+      cryptoRandomFloat() * (PHYSICS_CONFIG.maxVelocityMax - PHYSICS_CONFIG.maxVelocityMin);
     this._accelerationPhase = true;
     this.isSpinning = true;
-    this._onComplete = typeof onComplete === "function" ? onComplete : null;
+    this._onComplete = typeof onComplete === 'function' ? onComplete : null;
 
     if (this._rafId !== null) {
       cancelAnimationFrame(this._rafId);
@@ -87,8 +80,7 @@ export class SpinController {
     this._rotationAccumulated += this.angularVelocity;
 
     const remaining = this._totalRotationNeeded - this._rotationAccumulated;
-    const velocityLow =
-      Math.abs(this.angularVelocity) < PHYSICS_CONFIG.minVelocityThreshold;
+    const velocityLow = Math.abs(this.angularVelocity) < PHYSICS_CONFIG.minVelocityThreshold;
     const closeEnough = remaining <= PHYSICS_CONFIG.positionThreshold;
 
     if ((remaining <= 0 && velocityLow) || (closeEnough && velocityLow)) {
@@ -122,8 +114,7 @@ export class SpinController {
    * proportionally to weight and the final angle is placed inside that arc.
    */
   setSegmentWeights(weights) {
-    this._weights =
-      Array.isArray(weights) && weights.length > 0 ? [...weights] : null;
+    this._weights = Array.isArray(weights) && weights.length > 0 ? [...weights] : null;
   }
 
   _randomFinalAngleDeg() {
@@ -139,8 +130,7 @@ export class SpinController {
   _randomInitialVelocity() {
     return (
       PHYSICS_CONFIG.initialVelocityMin +
-      cryptoRandomFloat() *
-        (PHYSICS_CONFIG.initialVelocityMax - PHYSICS_CONFIG.initialVelocityMin)
+      cryptoRandomFloat() * (PHYSICS_CONFIG.initialVelocityMax - PHYSICS_CONFIG.initialVelocityMin)
     );
   }
 }
