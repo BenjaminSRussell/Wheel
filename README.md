@@ -269,3 +269,8 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code style, de
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+
+
+## Shareable spin results
+
+After a spin, **Copy share link** writes a `#spin=` hash URL that reopens the winner modal (no server). Segments are embedded in the hash payload.

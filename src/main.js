@@ -66,9 +66,65 @@ if (!winnerOverlay || !winnerSegmentName || !spinAgainButton) {
   throw new Error('Winner modal elements not found');
 }
 
+
+/** Shareable spin result via URL hash (#26). Format: #spin=<b64url(json)> */
+function encodeSpinShare(payload) {
+  const json = JSON.stringify(payload);
+  const b64 = btoa(unescape(encodeURIComponent(json)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return `#spin=${b64}`;
+}
+
+function decodeSpinShare(hash) {
+  const m = (hash || '').match(/[#&?]spin=([A-Za-z0-9_-]+)/);
+  if (!m) return null;
+  try {
+    let b64 = m[1].replace(/-/g, '+').replace(/_/g, '/');
+    while (b64.length % 4) b64 += '=';
+    return JSON.parse(decodeURIComponent(escape(atob(b64))));
+  } catch {
+    return null;
+  }
+}
+
+function currentSegmentLabels() {
+  return (APP_CONFIG.segments || []).map((s) => s.label || s.name || String(s));
+}
+
+function applySharedResult(data) {
+  if (!data || !data.winner) return false;
+  showWinnerModal(data.winner);
+  const status = document.getElementById('spinStatus');
+  if (status) status.textContent = `Shared result: ${data.winner}`;
+  return true;
+}
+
+async function copyShareLink(winnerLabel) {
+  const payload = {
+    v: 1,
+    winner: winnerLabel,
+    segments: currentSegmentLabels(),
+  };
+  const url = `${location.origin}${location.pathname}${location.search}${encodeSpinShare(payload)}`;
+  try {
+    await navigator.clipboard.writeText(url);
+    return true;
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    document.body.appendChild(ta);
+    ta.select();
+    try { return document.execCommand('copy'); }
+    finally { ta.remove(); }
+  }
+}
+
+
 let previouslyFocusedElement = null;
+let lastWinnerLabel = null;
 
 function showWinnerModal(segmentLabel) {
+  lastWinnerLabel = segmentLabel;
   // Store the previously focused element
   previouslyFocusedElement = document.activeElement;
 
@@ -137,6 +193,21 @@ canvas.addEventListener('keydown', (event) => {
   }
 });
 spinAgainButton.addEventListener('click', closeWinnerModal);
+
+const shareResultButton = document.getElementById('shareResultButton');
+if (shareResultButton) {
+  shareResultButton.addEventListener('click', async () => {
+    const label = lastWinnerLabel || winnerSegmentName.textContent;
+    const ok = await copyShareLink(label);
+    shareResultButton.textContent = ok ? 'Link copied' : 'Copy failed';
+    setTimeout(() => { shareResultButton.textContent = 'Copy share link'; }, 1500);
+  });
+}
+
+const shared = decodeSpinShare(location.hash);
+if (shared) applySharedResult(shared);
+
+
 
 // Handle Escape key to close the modal
 globalThis.addEventListener('keydown', (event) => {
