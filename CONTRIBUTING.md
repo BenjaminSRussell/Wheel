@@ -26,7 +26,7 @@ const name = user.name;
 counter = counter + 1;
 
 // Set the color (obvious from context)
-color = "red";
+color = 'red';
 ```
 
 ### Code Style

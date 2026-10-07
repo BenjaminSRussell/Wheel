@@ -170,14 +170,14 @@ Customizing the wheel is easy! All the main configuration is located in `src/com
 
    ```javascript
    segments: [
-     { label: "JavaScript", color: 0x3498db },
-     { label: "Python", color: 0x2ecc71 },
-     { label: "TypeScript", color: 0x9b59b6 },
-     { label: "React", color: 0xe74c3c },
-     { label: "Node.js", color: 0x1abc9c },
-     { label: "Go", color: 0x34495e },
-     { label: "Rust", color: 0xf39c12 },
-     { label: "Swift", color: 0x27ae60 },
+     { label: 'JavaScript', color: 0x3498db },
+     { label: 'Python', color: 0x2ecc71 },
+     { label: 'TypeScript', color: 0x9b59b6 },
+     { label: 'React', color: 0xe74c3c },
+     { label: 'Node.js', color: 0x1abc9c },
+     { label: 'Go', color: 0x34495e },
+     { label: 'Rust', color: 0xf39c12 },
+     { label: 'Swift', color: 0x27ae60 },
    ];
    ```
 
