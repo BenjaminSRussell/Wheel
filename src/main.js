@@ -66,12 +66,13 @@ if (!winnerOverlay || !winnerSegmentName || !spinAgainButton) {
   throw new Error('Winner modal elements not found');
 }
 
-
 /** Shareable spin result via URL hash (#26). Format: #spin=<b64url(json)> */
 function encodeSpinShare(payload) {
   const json = JSON.stringify(payload);
-  const b64 = btoa(unescape(encodeURIComponent(json)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  let b64 = btoa(unescape(encodeURIComponent(json)))
+    .replaceAll('+', '-')
+    .replaceAll('/', '_');
+  while (b64.endsWith('=')) b64 = b64.slice(0, -1);
   return `#spin=${b64}`;
 }
 
@@ -79,7 +80,7 @@ function decodeSpinShare(hash) {
   const m = (hash || '').match(/[#&?]spin=([A-Za-z0-9_-]+)/);
   if (!m) return null;
   try {
-    let b64 = m[1].replace(/-/g, '+').replace(/_/g, '/');
+    let b64 = m[1].replaceAll('-', '+').replaceAll('_', '/');
     while (b64.length % 4) b64 += '=';
     return JSON.parse(decodeURIComponent(escape(atob(b64))));
   } catch {
@@ -112,13 +113,15 @@ async function copyShareLink(winnerLabel) {
   } catch {
     const ta = document.createElement('textarea');
     ta.value = url;
-    document.body.appendChild(ta);
+    document.body.append(ta);
     ta.select();
-    try { return document.execCommand('copy'); }
-    finally { ta.remove(); }
+    try {
+      return document.execCommand('copy');
+    } finally {
+      ta.remove();
+    }
   }
 }
-
 
 let previouslyFocusedElement = null;
 let lastWinnerLabel = null;
@@ -200,14 +203,14 @@ if (shareResultButton) {
     const label = lastWinnerLabel || winnerSegmentName.textContent;
     const ok = await copyShareLink(label);
     shareResultButton.textContent = ok ? 'Link copied' : 'Copy failed';
-    setTimeout(() => { shareResultButton.textContent = 'Copy share link'; }, 1500);
+    setTimeout(() => {
+      shareResultButton.textContent = 'Copy share link';
+    }, 1500);
   });
 }
 
 const shared = decodeSpinShare(location.hash);
 if (shared) applySharedResult(shared);
-
-
 
 // Handle Escape key to close the modal
 globalThis.addEventListener('keydown', (event) => {

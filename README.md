@@ -270,7 +270,14 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code style, de
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
 
-
 ## Shareable spin results
 
 After a spin, **Copy share link** writes a `#spin=` hash URL that reopens the winner modal (no server). Segments are embedded in the hash payload.
+
+## Segment color contrast
+
+Segment labels are drawn in black or white, whichever has the higher WCAG
+contrast against the segment color (`src/utils/contrast.js`). On startup the
+wheel logs a `console.warn` for any segment whose label contrast is below
+WCAG AA (4.5:1). The default palette passes; check custom colors with
+`auditSegmentContrast(segments)`.
