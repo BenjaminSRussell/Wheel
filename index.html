@@ -337,6 +337,15 @@
           padding: 10px 25px;
         }
       }
+
+      .segment-editor {
+        margin: 1rem auto;
+        max-width: 32rem;
+        text-align: left;
+      }
+      .segment-editor button {
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
@@ -349,6 +358,29 @@
         tabindex="0"
       ></canvas>
       <div id="spinStatus" class="sr-live" aria-live="polite"></div>
+
+      <section id="segment-editor" class="segment-editor" aria-label="Segment editor">
+        <h2 class="sr-only">Edit segments</h2>
+        <textarea
+          id="segmentPresetJson"
+          rows="6"
+          aria-label="Segments JSON preset"
+          style="width: min(100%, 28rem); font-family: monospace; font-size: 12px"
+        ></textarea>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem">
+          <button type="button" id="segmentSaveBtn">Save segments</button>
+          <button type="button" id="segmentExportBtn">Export JSON</button>
+          <button type="button" id="segmentImportBtn">Import JSON</button>
+          <input
+            type="file"
+            id="segmentImportFile"
+            accept="application/json,.json"
+            class="sr-only"
+          />
+        </div>
+        <p id="segmentEditorStatus" class="sr-live" aria-live="polite"></p>
+      </section>
+
       <button id="spinButton" type="button" aria-busy="false">SPIN THE WHEEL!</button>
       <div id="webglFallback" role="alert" data-visible="false">
         <p>

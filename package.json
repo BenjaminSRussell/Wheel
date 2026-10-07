@@ -11,9 +11,9 @@
     "lint:ci": "eslint \"src/**/*.js\" --max-warnings=0 --report-unused-disable-directives",
     "format": "prettier --write \"**/*.{js,json,html,css,md,yml,yaml}\" --config config/.prettierrc.json",
     "format:check": "prettier --check \"**/*.{js,json,html,css,md,yml,yaml}\" --config config/.prettierrc.json",
-    "test": "jest --coverage",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "test:watch": "jest --watch",
-    "test:ci": "jest --coverage --ci",
+    "test:ci": "NODE_OPTIONS=--experimental-vm-modules jest --coverage --ci",
     "audit:ci": "npm audit --omit dev --audit-level=moderate",
     "prepare": "husky install",
     "pre-commit": "lint-staged",
@@ -63,6 +63,10 @@
     ],
     "collectCoverageFrom": [
       "src/**/*.js"
-    ]
+    ],
+    "transform": {},
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    }
   }
 }

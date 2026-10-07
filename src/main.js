@@ -4,6 +4,13 @@ import { Wheel } from './components/Wheel.js';
 import { APP_CONFIG } from './config/appConfig.js';
 import { SpinController } from './controllers/SpinController.js';
 import { ConfettiSystem } from './effects/ConfettiSystem.js';
+import {
+  pushSpinHistory,
+  saveSegments,
+  exportPreset,
+  importPreset,
+  MIN_SEGMENTS,
+} from './utils/segmentStore.js';
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(APP_CONFIG.scene.backgroundColor);
@@ -128,6 +135,12 @@ let lastWinnerLabel = null;
 
 function showWinnerModal(segmentLabel) {
   lastWinnerLabel = segmentLabel;
+  try {
+    pushSpinHistory(segmentLabel);
+  } catch {
+    /* ignore quota / private mode */
+  }
+
   // Store the previously focused element
   previouslyFocusedElement = document.activeElement;
 
@@ -262,3 +275,55 @@ function cleanup() {
 }
 
 window.addEventListener('beforeunload', cleanup);
+
+function setupSegmentEditor(appConfig, rebuildWheel) {
+  const ta = document.getElementById('segmentPresetJson');
+  const status = document.getElementById('segmentEditorStatus');
+  const saveBtn = document.getElementById('segmentSaveBtn');
+  const exportBtn = document.getElementById('segmentExportBtn');
+  const importBtn = document.getElementById('segmentImportBtn');
+  const fileInput = document.getElementById('segmentImportFile');
+  if (!ta || !saveBtn) return;
+
+  const syncTa = () => {
+    ta.value = exportPreset(appConfig.segments);
+  };
+  syncTa();
+
+  saveBtn.addEventListener('click', () => {
+    try {
+      const next = importPreset(ta.value);
+      if (next.length < MIN_SEGMENTS) throw new Error(`need at least ${MIN_SEGMENTS}`);
+      saveSegments(next);
+      appConfig.segments = next;
+      status.textContent = 'Saved. Reload to rebuild wheel meshes.';
+      if (typeof rebuildWheel === 'function') rebuildWheel();
+      else location.reload();
+    } catch (error) {
+      status.textContent = String(error.message || error);
+    }
+  });
+  exportBtn?.addEventListener('click', () => {
+    const blob = new Blob([exportPreset(appConfig.segments)], {
+      type: 'application/json',
+    });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'wheel-segments.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  importBtn?.addEventListener('click', () => fileInput?.click());
+  fileInput?.addEventListener('change', async () => {
+    const f = fileInput.files?.[0];
+    if (!f) return;
+    try {
+      ta.value = await f.text();
+      status.textContent = 'Imported into editor — click Save segments.';
+    } catch (error) {
+      status.textContent = String(error.message || error);
+    }
+  });
+}
+
+setupSegmentEditor(APP_CONFIG.wheel);

@@ -3,7 +3,9 @@
  * All runtime constants are defined here for easy customization and maintenance.
  */
 
-const WHEEL_SEGMENTS = [
+import { loadSegments } from '../utils/segmentStore.js';
+
+const DEFAULT_WHEEL_SEGMENTS = [
   { label: 'Haunted House', color: 0x1a0a00 },
   { label: 'Pumpkin Patch', color: 0xff6600 },
   { label: "Witch's Brew", color: 0x4b0082 },
@@ -103,7 +105,7 @@ export const SCENE_CONFIG = {
 };
 
 export const WHEEL_CONFIG = {
-  segments: WHEEL_SEGMENTS,
+  segments: loadSegments(DEFAULT_WHEEL_SEGMENTS),
   ...WHEEL_APPEARANCE,
   ...LED_CONFIG,
 };
