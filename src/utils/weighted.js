@@ -1,6 +1,7 @@
 /** Weighted segment selection (#24). */
 import { cryptoRandomFloat } from './crypto.js';
 
+/** @param {readonly number[]} weights @returns {number[]} */
 export function normalizeWeights(weights) {
   return weights.map((w) => (Number.isFinite(w) && w > 0 ? w : 0));
 }
@@ -8,6 +9,11 @@ export function normalizeWeights(weights) {
 /**
  * Pick an index with probability proportional to its weight.
  * Falls back to uniform when every weight is zero/invalid.
+ */
+/**
+ * @param {readonly number[]} weights
+ * @param {() => number} [rand]
+ * @returns {number}
  */
 export function pickWeightedIndex(weights, rand = cryptoRandomFloat) {
   const clean = normalizeWeights(weights);
@@ -27,6 +33,12 @@ export function pickWeightedIndex(weights, rand = cryptoRandomFloat) {
  * under the pointer. Wheel.getCurrentSegment() selects the segment whose arc
  * straddles angle 0 after rotation, so we rotate by -(start + f * arc).
  * `f` stays away from the edges so we never land on a boundary.
+ */
+/**
+ * @param {number} index
+ * @param {number} count
+ * @param {() => number} [rand]
+ * @returns {number}
  */
 export function angleForSegmentIndex(index, count, rand = cryptoRandomFloat) {
   const arc = (2 * Math.PI) / count;

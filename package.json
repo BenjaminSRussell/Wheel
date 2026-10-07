@@ -17,7 +17,8 @@
     "audit:ci": "npm audit --omit dev --audit-level=moderate",
     "prepare": "husky install",
     "pre-commit": "lint-staged",
-    "check:quality": "npm run lint:ci && npm run format:check && npm run test:ci && npm run audit:ci"
+    "check:quality": "npm run lint:ci && npm run format:check && npm run typecheck && npm run test:ci && npm run audit:ci",
+    "typecheck": "tsc -p tsconfig.json"
   },
   "keywords": [
     "three.js",
@@ -53,7 +54,8 @@
     "jest-environment-jsdom": "^29.7.0",
     "lint-staged": "^15.2.10",
     "live-server": "1.2.2",
-    "prettier": "^3.6.2"
+    "prettier": "^3.6.2",
+    "typescript": "5.9.3"
   },
   "jest": {
     "testEnvironment": "jsdom",
