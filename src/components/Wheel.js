@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 
 import { WHEEL_CONFIG } from '../config/appConfig.js';
+import { auditSegmentContrast, bestTextColor, toCssHex } from '../utils/contrast.js';
 
 export class Wheel {
   constructor(scene, config = {}) {
@@ -34,6 +35,10 @@ export class Wheel {
   }
 
   _buildWheel() {
+    // Warn about segment colors whose labels would be hard to read (#28).
+    for (const warning of auditSegmentContrast(this.segments)) {
+      console.warn(`[Wheel] ${warning.message}`);
+    }
     this.segments.forEach((segment) => {
       const segmentMesh = this._createSegment(
         this.config.innerRadius,
@@ -75,12 +80,20 @@ export class Wheel {
     const group = new THREE.Group();
     group.add(mesh);
     group.add(line);
-    this._addTextLabel(group, label, startAngle, endAngle, innerRadius, outerRadius);
+    this._addTextLabel(group, label, startAngle, endAngle, innerRadius, outerRadius, color);
 
     return group;
   }
 
-  _addTextLabel(group, text, startAngle, endAngle, innerRadius, outerRadius) {
+  _addTextLabel(
+    group,
+    text,
+    startAngle,
+    endAngle,
+    innerRadius,
+    outerRadius,
+    segmentColor = 0x000000,
+  ) {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
     canvas.width = 256;
@@ -89,10 +102,12 @@ export class Wheel {
     context.font = 'bold 36px "Playfair Display", "Times New Roman", serif';
     context.textAlign = 'center';
     context.textBaseline = 'middle';
-    context.strokeStyle = '#000000';
+    // Label color follows the segment so light segments get dark text.
+    const textColor = bestTextColor(segmentColor);
+    context.strokeStyle = toCssHex(textColor === 0xffffff ? 0x000000 : 0xffffff);
     context.lineWidth = 3;
     context.strokeText(text, canvas.width / 2, canvas.height / 2);
-    context.fillStyle = '#FFFFFF';
+    context.fillStyle = toCssHex(textColor);
     context.fillText(text, canvas.width / 2, canvas.height / 2);
 
     const texture = new THREE.CanvasTexture(canvas);
