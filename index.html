@@ -176,11 +176,153 @@
           min-width: 200px;
         }
       }
+
+      /* Winner Modal Styles */
+      .winner-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+      }
+
+      .winner-modal-overlay.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .winner-modal {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        padding: 40px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow:
+          0 8px 32px 0 rgba(31, 38, 135, 0.37),
+          inset 0 0 20px rgba(255, 102, 0, 0.1);
+        text-align: center;
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+      }
+
+      .winner-modal-overlay.show .winner-modal {
+        transform: scale(1);
+      }
+
+      .winner-modal-title {
+        font-size: 1.2rem;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 20px;
+        font-weight: 500;
+      }
+
+      .winner-modal-segment {
+        font-size: 3rem;
+        font-weight: 900;
+        background: linear-gradient(90deg, #ff6600, #ff4500, #ff8c00);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        filter: drop-shadow(0 0 10px rgba(255, 102, 0, 0.6));
+        margin-bottom: 40px;
+        animation: modalSegmentBounce 0.6s ease-in-out;
+      }
+
+      @keyframes modalSegmentBounce {
+        0% {
+          transform: scale(0.8) translateY(10px);
+          opacity: 0;
+        }
+        60% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1) translateY(0);
+          opacity: 1;
+        }
+      }
+
+      .winner-modal-button {
+        background: linear-gradient(135deg, #ff6600, #cc5200);
+        color: var(--text-primary);
+        border: 2px solid var(--text-primary);
+        padding: 15px 40px;
+        font-size: 18px;
+        font-weight: 900;
+        border-radius: 30px;
+        cursor: pointer;
+        box-shadow:
+          0 0 20px rgba(255, 102, 0, 0.6),
+          0 5px 15px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .winner-modal-button:hover {
+        transform: scale(1.08);
+        box-shadow:
+          0 0 30px rgba(255, 102, 0, 0.8),
+          0 10px 20px rgba(0, 0, 0, 0.4);
+      }
+
+      .winner-modal-button:active {
+        transform: scale(0.95);
+      }
+
+      @media (max-width: 768px) {
+        .winner-modal {
+          padding: 30px;
+        }
+
+        .winner-modal-segment {
+          font-size: 2.5rem;
+        }
+
+        .winner-modal-button {
+          font-size: 16px;
+          padding: 12px 30px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .winner-modal {
+          padding: 20px;
+        }
+
+        .winner-modal-segment {
+          font-size: 2rem;
+        }
+
+        .winner-modal-button {
+          font-size: 14px;
+          padding: 10px 25px;
+        }
+      }
     </style>
   </head>
   <body>
     <canvas id="c"></canvas>
     <button id="spinButton">SPIN THE WHEEL!</button>
+
+    <!-- Winner announcement modal -->
+    <div id="winnerOverlay" class="winner-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="winnerTitle" aria-hidden="true">
+      <div class="winner-modal">
+        <h2 id="winnerTitle" class="winner-modal-title">You landed on...</h2>
+        <div id="winnerSegmentName" class="winner-modal-segment" aria-live="polite">Prize Name</div>
+        <button id="spinAgainButton" class="winner-modal-button">Spin Again</button>
+      </div>
+    </div>
 
     <script type="importmap">
       {
