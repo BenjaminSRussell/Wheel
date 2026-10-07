@@ -3,15 +3,17 @@
  * All runtime constants are defined here for easy customization and maintenance.
  */
 
-const WHEEL_SEGMENTS = [
-  { label: 'Haunted House', color: 0x1a0a00 },
-  { label: 'Pumpkin Patch', color: 0xff6600 },
+import { loadSegments } from "../utils/segmentStore.js";
+
+const DEFAULT_WHEEL_SEGMENTS = [
+  { label: "Haunted House", color: 0x1a0a00 },
+  { label: "Pumpkin Patch", color: 0xff6600 },
   { label: "Witch's Brew", color: 0x4b0082 },
-  { label: 'Ghost Town', color: 0xcccccc },
-  { label: 'Blood Moon', color: 0x8b0000 },
-  { label: 'Candy Corn', color: 0xffa500 },
-  { label: 'Black Cat', color: 0x0a0a0a },
-  { label: 'Graveyard', color: 0x2f4f2f },
+  { label: "Ghost Town", color: 0xcccccc },
+  { label: "Blood Moon", color: 0x8b0000 },
+  { label: "Candy Corn", color: 0xffa500 },
+  { label: "Black Cat", color: 0x0a0a0a },
+  { label: "Graveyard", color: 0x2f4f2f },
 ];
 
 const WHEEL_APPEARANCE = {
@@ -88,9 +90,9 @@ const ANIMATION_CONFIG = {
 };
 
 export const UI_CONFIG = {
-  title: 'Decision Wheel',
-  buttonText: 'SPIN THE WHEEL!',
-  buttonDisabledText: 'SPINNING...',
+  title: "Decision Wheel",
+  buttonText: "SPIN THE WHEEL!",
+  buttonDisabledText: "SPINNING...",
   buttonCooldown: 2000,
 };
 
@@ -103,7 +105,7 @@ export const SCENE_CONFIG = {
 };
 
 export const WHEEL_CONFIG = {
-  segments: WHEEL_SEGMENTS,
+  segments: loadSegments(DEFAULT_WHEEL_SEGMENTS),
   ...WHEEL_APPEARANCE,
   ...LED_CONFIG,
 };
