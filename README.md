@@ -161,29 +161,30 @@ Test files are located alongside their source code in `__tests__` directories.
 
 ## How to Customize
 
-Customizing the wheel is easy! All the main configuration is located in `src/components/Wheel.js`.
+All runtime configuration lives in **`src/config/appConfig.js`**. It is the single source of truth: components such as `Wheel.js` read from it and hold no defaults of their own.
 
-### Changing Wheel Segments (Tech Labels and Colors)
+### Changing Wheel Segments (Labels and Colors)
 
-1. **Open `src/components/Wheel.js`**.
-2. Find the `segments` array in the constructor configuration:
+1. **Open `src/config/appConfig.js`**.
+2. Edit the `DEFAULT_WHEEL_SEGMENTS` array:
 
    ```javascript
-   segments: [
-     { label: 'JavaScript', color: 0x3498db },
-     { label: 'Python', color: 0x2ecc71 },
-     { label: 'TypeScript', color: 0x9b59b6 },
-     { label: 'React', color: 0xe74c3c },
-     { label: 'Node.js', color: 0x1abc9c },
-     { label: 'Go', color: 0x34495e },
-     { label: 'Rust', color: 0xf39c12 },
-     { label: 'Swift', color: 0x27ae60 },
+   const DEFAULT_WHEEL_SEGMENTS = [
+     { label: 'Haunted House', color: 0x1a0a00 },
+     { label: 'Pumpkin Patch', color: 0xff6600 },
+     // ...
    ];
    ```
 
-3. **To change the tech labels**, edit the `label` property of each segment object.
-4. **To change the colors**, edit the `color` property using hex values (e.g., `0x3498db` for blue).
-5. **To add/remove segments**, simply add or remove objects from the array. The wheel will automatically adjust to the new number of segments.
+3. `label` is the text and `color` is a `0xRRGGBB` number. An optional `weight` biases landing odds (see below).
+4. Add or remove entries freely. The wheel recomputes segment angles automatically.
+5. Segments saved in the in-app editor (localStorage) override these defaults until cleared.
+
+Physics (`PHYSICS_CONFIG`), confetti (`CONFETTI_CONFIG`), LEDs (`LED_CONFIG`) and UI text (`UI_CONFIG`) are all in the same file.
+
+### Type checking
+
+Core modules (`src/utils`, `src/controllers`, `src/config`) are type-checked with TypeScript in `checkJs` strict mode using JSDoc annotations and shared types in `src/types/wheel.d.ts`. The browser still loads plain ES modules, so there's no build step. Run `npm run typecheck`; CI runs it too. To migrate another module, add JSDoc types and widen `include` in `tsconfig.json`.
 
 ### Weighted Segments & Effects Settings
 
@@ -263,7 +264,7 @@ src/
 src/
 ├── main.js                 # Entry point and scene setup
 ├── components/
-│   └── Wheel.js           # Main wheel component with segments and LEDs
+│   └── Wheel.js           # Main wheel component (meshes + LEDs; segments come from config)
 ├── controllers/
 │   └── SpinController.js  # Physics-based spinning logic
 └── effects/

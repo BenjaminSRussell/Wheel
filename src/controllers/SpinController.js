@@ -25,6 +25,7 @@ export class SpinController {
     this._boundTick = this._tick.bind(this);
   }
 
+  /** @param {((finalAngleDeg: number) => void)} [onComplete] @returns {boolean} */
   startSpin(onComplete) {
     if (this.isSpinning) {
       return false;
@@ -113,6 +114,7 @@ export class SpinController {
    * Optional per-segment weights (#24). When set, the landing segment is picked
    * proportionally to weight and the final angle is placed inside that arc.
    */
+  /** @param {readonly number[] | null} weights */
   setSegmentWeights(weights) {
     this._weights = Array.isArray(weights) && weights.length > 0 ? [...weights] : null;
   }

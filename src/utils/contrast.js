@@ -9,11 +9,13 @@ export const WCAG_AA_LARGE = 3;
 const WHITE = 0xffffff;
 const BLACK = 0x000000;
 
+/** @param {number} c8 0-255 channel @returns {number} */
 function channel(c8) {
   const c = c8 / 255;
   return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
 }
 
+/** @param {number} color 0xRRGGBB @returns {number} */
 export function relativeLuminance(color) {
   const r = (color >> 16) & 0xff;
   const g = (color >> 8) & 0xff;
@@ -21,6 +23,7 @@ export function relativeLuminance(color) {
   return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
 }
 
+/** @param {number} a @param {number} b @returns {number} */
 export function contrastRatio(a, b) {
   const la = relativeLuminance(a);
   const lb = relativeLuminance(b);
@@ -28,11 +31,16 @@ export function contrastRatio(a, b) {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-/** Black or white, whichever reads better on `background`. */
+/**
+ * Black or white, whichever reads better on `background`.
+ * @param {number} background
+ * @returns {number}
+ */
 export function bestTextColor(background) {
   return contrastRatio(background, WHITE) >= contrastRatio(background, BLACK) ? WHITE : BLACK;
 }
 
+/** @param {number} color @returns {string} */
 export function toCssHex(color) {
   return `#${(color & 0xffffff).toString(16).padStart(6, '0')}`;
 }
@@ -40,8 +48,12 @@ export function toCssHex(color) {
 /**
  * Audit segments: each label is drawn in bestTextColor(segment.color).
  * Returns one warning per segment whose label contrast is below `minRatio`.
+ * @param {ReadonlyArray<{ label: string; color: number }>} segments
+ * @param {number} [minRatio]
+ * @returns {Array<{ label: string; color: string; ratio: number; message: string }>}
  */
 export function auditSegmentContrast(segments, minRatio = WCAG_AA_NORMAL) {
+  /** @type {Array<{ label: string; color: string; ratio: number; message: string }>} */
   const warnings = [];
   for (const segment of segments) {
     const text = bestTextColor(segment.color);
