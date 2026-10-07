@@ -22,3 +22,19 @@ test('rejects fewer than min segments', () => {
     deserializeSegments(JSON.stringify({ version: 1, segments: [{ label: 'x', color: 1 }] })),
   ).toThrow(String(MIN_SEGMENTS));
 });
+
+test('segments accept optional non-negative weight', () => {
+  const raw = serializeSegments([
+    { label: 'A', color: 1, weight: 3 },
+    { label: 'B', color: 2 },
+  ]);
+  expect(deserializeSegments(raw)[0].weight).toBe(3);
+  expect(() =>
+    deserializeSegments(
+      serializeSegments([
+        { label: 'A', color: 1, weight: -1 },
+        { label: 'B', color: 2 },
+      ]),
+    ),
+  ).toThrow();
+});

@@ -183,12 +183,13 @@ export class Wheel {
     this.wheelGroup.rotation.z = angle;
   }
 
-  updateLEDs(time) {
+  updateLEDs(time, { pulse } = {}) {
     const baseIntensity = 0.8;
     const reduceMotion =
       globalThis.window !== undefined &&
       globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const pulseAmount = reduceMotion ? 0 : 0.3;
+    const pulseOn = typeof pulse === 'boolean' ? pulse : !reduceMotion;
+    const pulseAmount = pulseOn ? 0.3 : 0;
 
     this.ledLights.forEach((led, index) => {
       const phase = (index / this.ledLights.length) * Math.PI * 2;

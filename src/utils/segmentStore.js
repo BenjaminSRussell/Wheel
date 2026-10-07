@@ -21,6 +21,9 @@ export function deserializeSegments(raw, _fallback) {
     if (!s || typeof s.label !== 'string' || typeof s.color !== 'number') {
       throw new Error('segment requires label:string and color:number');
     }
+    if (s.weight !== undefined && (!Number.isFinite(s.weight) || s.weight < 0)) {
+      throw new Error('segment weight must be a non-negative number');
+    }
   }
   return parsed.segments;
 }

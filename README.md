@@ -185,6 +185,18 @@ Customizing the wheel is easy! All the main configuration is located in `src/com
 4. **To change the colors**, edit the `color` property using hex values (e.g., `0x3498db` for blue).
 5. **To add/remove segments**, simply add or remove objects from the array. The wheel will automatically adjust to the new number of segments.
 
+### Weighted Segments & Effects Settings
+
+- **Weights (#24):** any segment may carry an optional `weight` (default `1`), e.g.
+  `{ "label": "Pizza", "color": 16711680, "weight": 3 }` in the segment editor JSON.
+  A weight-3 segment lands ~3x as often as a weight-1 segment; `0` means never.
+- **Effects panel:** toggles for _Confetti_, _LED pulse_, _Reduce motion_ (forces the
+  reduced-motion path even if the OS doesn't ask for it) and _Sound cue_. Choices persist
+  in `localStorage` (`wheel.fxSettings.v1`).
+- **Audio & reduced motion (#27):** the result chime defaults **off** when the OS reports
+  `prefers-reduced-motion: reduce`; you can still switch it on explicitly and that choice is
+  remembered. With reduced motion (OS or forced), confetti and LED pulsing stay off.
+
 ### Customizing LED Effects
 
 You can modify the LED rim effects by changing these properties in the Wheel constructor:

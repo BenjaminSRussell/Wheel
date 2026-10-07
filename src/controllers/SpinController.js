@@ -1,6 +1,7 @@
 import { PHYSICS_CONFIG } from '../config/appConfig.js';
 import { cryptoRandomFloat } from '../utils/crypto.js';
 import { TWO_PI, normalizeAngleRad, degToRad, radToDeg } from '../utils/math.js';
+import { angleForSegmentIndex, pickWeightedIndex } from '../utils/weighted.js';
 
 export class SpinController {
   constructor({ initialAngle = 0, friction = PHYSICS_CONFIG.friction } = {}) {
@@ -16,6 +17,9 @@ export class SpinController {
     this._onComplete = null;
     this._maxVelocity = 0;
     this._accelerationPhase = true;
+
+    this._weights = null;
+    this.lastTargetIndex = null;
 
     this._rafId = null;
     this._boundTick = this._tick.bind(this);
@@ -105,7 +109,21 @@ export class SpinController {
     }
   }
 
+  /**
+   * Optional per-segment weights (#24). When set, the landing segment is picked
+   * proportionally to weight and the final angle is placed inside that arc.
+   */
+  setSegmentWeights(weights) {
+    this._weights = Array.isArray(weights) && weights.length > 0 ? [...weights] : null;
+  }
+
   _randomFinalAngleDeg() {
+    if (this._weights) {
+      const index = pickWeightedIndex(this._weights);
+      this.lastTargetIndex = index;
+      return radToDeg(angleForSegmentIndex(index, this._weights.length));
+    }
+    this.lastTargetIndex = null;
     return cryptoRandomFloat() * 360;
   }
 

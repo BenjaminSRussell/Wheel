@@ -5,6 +5,13 @@ import { APP_CONFIG } from './config/appConfig.js';
 import { SpinController } from './controllers/SpinController.js';
 import { ConfettiSystem } from './effects/ConfettiSystem.js';
 import {
+  loadFxSettings,
+  playResultCue,
+  saveFxSettings,
+  shouldPulseLeds,
+  shouldSpawnConfetti,
+} from './utils/fxSettings.js';
+import {
   pushSpinHistory,
   saveSegments,
   exportPreset,
@@ -60,6 +67,13 @@ const wheel = new Wheel(scene);
 const spinController = new SpinController();
 const confettiSystem = new ConfettiSystem(scene);
 confettiSystem.setCamera(camera);
+
+// Weighted landing (#24): segments may carry an optional `weight` (default 1).
+spinController.setSegmentWeights(
+  (APP_CONFIG.wheel.segments || []).map((s) => (Number.isFinite(s?.weight) ? s.weight : 1)),
+);
+
+let fxSettings = loadFxSettings();
 
 const spinButton = document.getElementById('spinButton');
 if (!spinButton) {
@@ -182,10 +196,10 @@ function handleSpinClick() {
 
   spinController.startSpin((_finalAngle) => {
     const winningSegment = wheel.getCurrentSegment();
-    const reduceMotion = globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (!reduceMotion) {
+    if (shouldSpawnConfetti(fxSettings)) {
       confettiSystem.createConfetti();
     }
+    playResultCue(fxSettings);
 
     // Show the winner announcement modal
     showWinnerModal(winningSegment.label);
@@ -245,7 +259,7 @@ function animate() {
 
   const angle = spinController.update();
   wheel.updateRotation(angle);
-  wheel.updateLEDs(animationTime);
+  wheel.updateLEDs(animationTime, { pulse: shouldPulseLeds(fxSettings) });
   confettiSystem.update();
   renderer.render(scene, camera);
 }
@@ -327,3 +341,28 @@ function setupSegmentEditor(appConfig, rebuildWheel) {
 }
 
 setupSegmentEditor(APP_CONFIG.wheel);
+
+/** FX / audio settings panel (#24, #27). */
+function setupFxSettings() {
+  const ids = {
+    audio: 'fxAudio',
+    confetti: 'fxConfetti',
+    forceReducedMotion: 'fxReduceMotion',
+    ledPulse: 'fxLedPulse',
+  };
+  for (const [key, id] of Object.entries(ids)) {
+    const input = document.getElementById(id);
+    if (!input) continue;
+    input.checked = Boolean(fxSettings[key]);
+    input.addEventListener('change', () => {
+      fxSettings = { ...fxSettings, [key]: input.checked };
+      try {
+        saveFxSettings(fxSettings);
+      } catch {
+        /* ignore quota / private mode */
+      }
+    });
+  }
+}
+
+setupFxSettings();

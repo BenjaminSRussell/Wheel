@@ -46,10 +46,30 @@ describe('SpinController', () => {
       expect(controller.isSpinning).toBe(true);
     });
 
-    it('calls onComplete callback when provided', (done) => {
+    it('calls onComplete callback when provided', () => {
+      // Drive frames synchronously: rAF timing in jsdom made this flaky.
+      let calls = 0;
       controller.startSpin(() => {
-        done();
+        calls += 1;
       });
+      for (let i = 0; i < 100_000 && controller.isSpinning; i += 1) controller.update();
+      expect(calls).toBe(1);
+    });
+
+    it('lands on the weighted segment when weights are set', () => {
+      controller.setSegmentWeights([0, 1, 0, 0]);
+      let landed;
+      controller.startSpin((deg) => {
+        landed = deg;
+      });
+      expect(controller.lastTargetIndex).toBe(1);
+      for (let i = 0; i < 100_000 && controller.isSpinning; i += 1) controller.update();
+      const rad = (landed * Math.PI) / 180;
+      const arc = (2 * Math.PI) / 4;
+      // Segment 1 straddles 0 after rotation: rotation in (-(2*arc), -arc] mod 2π.
+      const norm = ((-rad % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+      expect(norm).toBeGreaterThan(arc);
+      expect(norm).toBeLessThan(2 * arc);
     });
 
     it('sets initial velocity within expected range', () => {
