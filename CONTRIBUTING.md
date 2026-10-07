@@ -9,6 +9,7 @@ Thank you for your interest in contributing! This document outlines our coding s
 Focus comments on **why**, tradeoffs, assumptions, invariants, external constraints, edge cases, and temporary workarounds. Keep comments concise and use complete sentences.
 
 **Good comments:**
+
 ```javascript
 // Retry with exponential backoff because the upstream API returns 429s under burst load
 // Using median to reduce impact of outliers observed in field tests (>10x spikes)
@@ -16,6 +17,7 @@ Focus comments on **why**, tradeoffs, assumptions, invariants, external constrai
 ```
 
 **Bad comments:**
+
 ```javascript
 // Get the user name
 const name = user.name;
@@ -38,6 +40,7 @@ color = 'red';
 ### Examples
 
 **Simplify conditionals:**
+
 ```javascript
 // Bad
 if (condition) {
@@ -51,6 +54,7 @@ return Boolean(condition);
 ```
 
 **Improve naming:**
+
 ```javascript
 // Bad
 const result_list = [];
@@ -64,6 +68,7 @@ const formattedData = processData(x);
 ```
 
 **Flatten nesting:**
+
 ```javascript
 // Bad
 function processUser(user) {
@@ -104,6 +109,7 @@ The project uses automated tooling to maintain code quality:
 ### Pre-commit Hooks
 
 Before each commit, the following checks run:
+
 - ESLint with auto-fix
 - Prettier formatting
 - Jest tests for changed files
@@ -121,12 +127,14 @@ npm run check:quality # Run all quality checks
 ## Testing
 
 Write tests for:
+
 - New features
 - Bug fixes
 - Edge cases (empty, null, malformed inputs)
 - Core logic and utilities
 
 Tests should be:
+
 - Deterministic
 - Offline (no network calls)
 - Fast and focused
@@ -148,4 +156,3 @@ All runtime constants are defined in `src/config/appConfig.js`. Avoid hardcoding
 ## License
 
 By contributing, you agree that your contributions will be licensed under the MIT License.
-

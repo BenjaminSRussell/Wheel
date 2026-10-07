@@ -2,7 +2,11 @@
 
 import { spawn } from 'child_process';
 
-const server = spawn('npx', ['live-server', '--port=8080', '--host=127.0.0.1', '--open=/', '--no-browser', '--cors'], { stdio: 'inherit' });
+const server = spawn(
+  'npx',
+  ['live-server', '--port=8080', '--host=127.0.0.1', '--open=/', '--no-browser', '--cors'],
+  { stdio: 'inherit' },
+);
 
 process.on('SIGINT', () => {
   server.kill('SIGTERM');

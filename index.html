@@ -4,12 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Decision Wheel</title>
-    <link
-      rel="preload"
-      href="/src/main.js"
-      as="script"
-      crossorigin="anonymous"
-    />
+    <link rel="preload" href="/src/main.js" as="script" crossorigin="anonymous" />
     <meta name="description" content="Decision Wheel" />
     <meta name="theme-color" content="#0a0a0a" />
     <link
@@ -38,21 +33,15 @@
           #54a0ff,
           #5f27cd
         );
-        --button-shadow:
-          0 15px 35px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(0, 0, 0, 0.2);
-        --button-shadow-hover:
-          0 20px 40px rgba(0, 0, 0, 0.4), 0 10px 20px rgba(0, 0, 0, 0.3);
+        --button-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(0, 0, 0, 0.2);
+        --button-shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.4), 0 10px 20px rgba(0, 0, 0, 0.3);
       }
 
       body {
         margin: 0;
         overflow: hidden;
-        background: radial-gradient(
-          ellipse at center,
-          #0a0a0a 0%,
-          #1a0a00 100%
-        );
-        font-family: "Comic Sans MS", "Segoe UI", Arial, sans-serif;
+        background: radial-gradient(ellipse at center, #0a0a0a 0%, #1a0a00 100%);
+        font-family: 'Comic Sans MS', 'Segoe UI', Arial, sans-serif;
         height: 100vh;
         position: relative;
         color: var(--text-primary);
@@ -67,7 +56,6 @@
 
       #spinButton {
         position: fixed;
-        bottom: 80px;
         left: 50%;
         transform: translateX(-50%);
         padding: 20px 50px;
@@ -89,8 +77,8 @@
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         animation: halloweenPulse 2s ease-in-out infinite;
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        position: relative;
         overflow: visible;
+        bottom: calc(80px + env(safe-area-inset-bottom, 0px));
         min-width: 250px;
         max-width: 90vw;
         white-space: nowrap;
@@ -110,6 +98,44 @@
         box-shadow:
           0 5px 15px rgba(0, 0, 0, 0.3),
           inset 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      #spinButton:focus-visible {
+        outline: 3px solid #ffcc66;
+        outline-offset: 4px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #spinButton {
+          animation: none !important;
+        }
+      }
+
+      .sr-live {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+      }
+
+      #webglFallback {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        background: #111;
+        color: #fff;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        text-align: center;
+      }
+      #webglFallback[data-visible='true'] {
+        display: flex;
       }
 
       #spinButton:disabled {
@@ -191,7 +217,9 @@
         z-index: 10000;
         opacity: 0;
         visibility: hidden;
-        transition: opacity 0.3s ease, visibility 0.3s ease;
+        transition:
+          opacity 0.3s ease,
+          visibility 0.3s ease;
       }
 
       .winner-modal-overlay.show {
@@ -313,12 +341,32 @@
   </head>
   <body>
     <main id="main">
-      <canvas id="c"></canvas>
-      <button id="spinButton">SPIN THE WHEEL!</button>
+      <h1 class="title">Decision Wheel</h1>
+      <canvas
+        id="c"
+        role="img"
+        aria-label="Decision wheel. Activate the Spin button to choose a segment."
+        tabindex="0"
+      ></canvas>
+      <div id="spinStatus" class="sr-live" aria-live="polite"></div>
+      <button id="spinButton" type="button" aria-busy="false">SPIN THE WHEEL!</button>
+      <div id="webglFallback" role="alert" data-visible="false">
+        <p>
+          WebGL could not start on this device. Try updating your browser or enabling hardware
+          acceleration, then reload.
+        </p>
+      </div>
     </main>
 
     <!-- Winner announcement modal -->
-    <div id="winnerOverlay" class="winner-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="winnerTitle" aria-hidden="true">
+    <div
+      id="winnerOverlay"
+      class="winner-modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="winnerTitle"
+      aria-hidden="true"
+    >
       <div class="winner-modal">
         <h2 id="winnerTitle" class="winner-modal-title">You landed on...</h2>
         <div id="winnerSegmentName" class="winner-modal-segment" aria-live="polite">Prize Name</div>

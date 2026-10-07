@@ -97,4 +97,19 @@ export default [
     },
   },
   eslintConfigPrettier,
+
+  {
+    files: ['src/**/__tests__/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.jest,
+      },
+    },
+    rules: {
+      'import-x/no-extraneous-dependencies': [
+        'error',
+        { devDependencies: true, optionalDependencies: false },
+      ],
+    },
+  },
 ];

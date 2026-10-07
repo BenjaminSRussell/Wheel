@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 
-import { APP_CONFIG } from './config/appConfig.js';
 import { Wheel } from './components/Wheel.js';
-import { ConfettiSystem } from './effects/ConfettiSystem.js';
+import { APP_CONFIG } from './config/appConfig.js';
 import { SpinController } from './controllers/SpinController.js';
+import { ConfettiSystem } from './effects/ConfettiSystem.js';
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(APP_CONFIG.scene.backgroundColor);
@@ -33,7 +33,19 @@ if (!canvas) {
   throw new Error('Canvas element with id "c" not found');
 }
 
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+} catch (error) {
+  const fallback = document.getElementById('webglFallback');
+  if (fallback) fallback.dataset.visible = 'true';
+  throw error;
+}
+if (!renderer.getContext()) {
+  const fallback = document.getElementById('webglFallback');
+  if (fallback) fallback.dataset.visible = 'true';
+  throw new Error('WebGL context unavailable');
+}
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
@@ -90,27 +102,44 @@ function handleSpinClick() {
   }
 
   spinButton.disabled = true;
+  spinButton.setAttribute('aria-busy', 'true');
+  spinButton.setAttribute('aria-label', 'Spinning');
   spinButton.textContent = APP_CONFIG.ui.buttonDisabledText;
+  const status = document.getElementById('spinStatus');
+  if (status) status.textContent = 'Spin started';
 
-  spinController.startSpin((finalAngle) => {
+  spinController.startSpin((_finalAngle) => {
     const winningSegment = wheel.getCurrentSegment();
-    confettiSystem.createConfetti();
+    const reduceMotion = globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reduceMotion) {
+      confettiSystem.createConfetti();
+    }
 
     // Show the winner announcement modal
     showWinnerModal(winningSegment.label);
 
     setTimeout(() => {
       spinButton.disabled = false;
+      spinButton.setAttribute('aria-busy', 'false');
+      spinButton.removeAttribute('aria-label');
       spinButton.textContent = APP_CONFIG.ui.buttonText;
+      if (status) status.textContent = `Result: ${winnerSegmentName?.textContent || 'done'}`;
     }, APP_CONFIG.ui.buttonCooldown);
   });
 }
 
 spinButton.addEventListener('click', handleSpinClick);
+canvas.addEventListener('click', handleSpinClick);
+canvas.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    handleSpinClick();
+  }
+});
 spinAgainButton.addEventListener('click', closeWinnerModal);
 
 // Handle Escape key to close the modal
-window.addEventListener('keydown', (event) => {
+globalThis.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && winnerOverlay.classList.contains('show')) {
     closeWinnerModal();
   }

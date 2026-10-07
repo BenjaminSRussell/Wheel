@@ -128,6 +128,7 @@ The project ships with automated quality tooling to keep the codebase consistent
 ### Pre-commit Hooks
 
 The project uses Husky and lint-staged to automatically run quality checks before each commit:
+
 - ESLint with auto-fix on staged JavaScript files
 - Prettier formatting on all staged files
 - Jest tests for changed test files
@@ -149,6 +150,7 @@ npm run test:ci   # Run tests in CI mode
 ```
 
 Tests cover:
+
 - Utility functions (crypto, math helpers)
 - Spin controller physics logic
 - Repository-level anti-pattern detection (no emojis, no empty catch blocks)

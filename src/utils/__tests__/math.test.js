@@ -1,5 +1,3 @@
-import { describe, it, expect } from '@jest/globals';
-
 import { TWO_PI, normalizeAngleRad, degToRad, radToDeg } from '../math.js';
 
 describe('math utilities', () => {
@@ -65,4 +63,3 @@ describe('math utilities', () => {
     });
   });
 });
-

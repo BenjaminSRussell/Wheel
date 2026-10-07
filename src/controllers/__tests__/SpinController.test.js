@@ -1,7 +1,5 @@
-import { describe, it, expect, beforeEach } from '@jest/globals';
-
-import { SpinController } from '../SpinController.js';
 import { PHYSICS_CONFIG } from '../../config/appConfig.js';
+import { SpinController } from '../SpinController.js';
 
 describe('SpinController', () => {
   let controller;
@@ -26,7 +24,9 @@ describe('SpinController', () => {
     });
 
     it('handles invalid initial angle', () => {
-      const controllerInvalid = new SpinController({ initialAngle: NaN });
+      const controllerInvalid = new SpinController({
+        initialAngle: Number.NaN,
+      });
       expect(controllerInvalid.currentAngle).toBe(0);
     });
   });
@@ -54,12 +54,8 @@ describe('SpinController', () => {
 
     it('sets initial velocity within expected range', () => {
       controller.startSpin();
-      expect(controller.angularVelocity).toBeGreaterThanOrEqual(
-        PHYSICS_CONFIG.initialVelocityMin,
-      );
-      expect(controller.angularVelocity).toBeLessThanOrEqual(
-        PHYSICS_CONFIG.initialVelocityMax,
-      );
+      expect(controller.angularVelocity).toBeGreaterThanOrEqual(PHYSICS_CONFIG.initialVelocityMin);
+      expect(controller.angularVelocity).toBeLessThanOrEqual(PHYSICS_CONFIG.initialVelocityMax);
     });
   });
 
@@ -96,4 +92,3 @@ describe('SpinController', () => {
     });
   });
 });
-
