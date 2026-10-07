@@ -4,7 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Decision Wheel</title>
-    <link rel="preload" href="/src/main.js" as="script" crossorigin="anonymous" />
+    <link
+      rel="preload"
+      href="/src/main.js"
+      as="script"
+      crossorigin="anonymous"
+    />
     <meta name="description" content="Decision Wheel" />
     <meta name="theme-color" content="#0a0a0a" />
     <link
@@ -33,15 +38,21 @@
           #54a0ff,
           #5f27cd
         );
-        --button-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(0, 0, 0, 0.2);
-        --button-shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.4), 0 10px 20px rgba(0, 0, 0, 0.3);
+        --button-shadow:
+          0 15px 35px rgba(0, 0, 0, 0.3), 0 5px 15px rgba(0, 0, 0, 0.2);
+        --button-shadow-hover:
+          0 20px 40px rgba(0, 0, 0, 0.4), 0 10px 20px rgba(0, 0, 0, 0.3);
       }
 
       body {
         margin: 0;
         overflow: hidden;
-        background: radial-gradient(ellipse at center, #0a0a0a 0%, #1a0a00 100%);
-        font-family: 'Comic Sans MS', 'Segoe UI', Arial, sans-serif;
+        background: radial-gradient(
+          ellipse at center,
+          #0a0a0a 0%,
+          #1a0a00 100%
+        );
+        font-family: "Comic Sans MS", "Segoe UI", Arial, sans-serif;
         height: 100vh;
         position: relative;
         color: var(--text-primary);
@@ -134,7 +145,7 @@
         padding: 2rem;
         text-align: center;
       }
-      #webglFallback[data-visible='true'] {
+      #webglFallback[data-visible="true"] {
         display: flex;
       }
 
@@ -359,15 +370,30 @@
       ></canvas>
       <div id="spinStatus" class="sr-live" aria-live="polite"></div>
 
-      <section id="segment-editor" class="segment-editor" aria-label="Segment editor">
+      <section
+        id="segment-editor"
+        class="segment-editor"
+        aria-label="Segment editor"
+      >
         <h2 class="sr-only">Edit segments</h2>
         <textarea
           id="segmentPresetJson"
           rows="6"
           aria-label="Segments JSON preset"
-          style="width: min(100%, 28rem); font-family: monospace; font-size: 12px"
+          style="
+            width: min(100%, 28rem);
+            font-family: monospace;
+            font-size: 12px;
+          "
         ></textarea>
-        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem">
+        <div
+          style="
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+          "
+        >
           <button type="button" id="segmentSaveBtn">Save segments</button>
           <button type="button" id="segmentExportBtn">Export JSON</button>
           <button type="button" id="segmentImportBtn">Import JSON</button>
@@ -381,11 +407,27 @@
         <p id="segmentEditorStatus" class="sr-live" aria-live="polite"></p>
       </section>
 
-      <button id="spinButton" type="button" aria-busy="false">SPIN THE WHEEL!</button>
+      <fieldset
+        id="fx-settings"
+        class="segment-editor"
+        aria-label="Effects settings"
+      >
+        <legend>Effects</legend>
+        <label><input type="checkbox" id="fxConfetti" /> Confetti</label>
+        <label><input type="checkbox" id="fxLedPulse" /> LED pulse</label>
+        <label
+          ><input type="checkbox" id="fxReduceMotion" /> Reduce motion</label
+        >
+        <label><input type="checkbox" id="fxAudio" /> Sound cue</label>
+      </fieldset>
+
+      <button id="spinButton" type="button" aria-busy="false">
+        SPIN THE WHEEL!
+      </button>
       <div id="webglFallback" role="alert" data-visible="false">
         <p>
-          WebGL could not start on this device. Try updating your browser or enabling hardware
-          acceleration, then reload.
+          WebGL could not start on this device. Try updating your browser or
+          enabling hardware acceleration, then reload.
         </p>
       </div>
     </main>
@@ -401,7 +443,13 @@
     >
       <div class="winner-modal">
         <h2 id="winnerTitle" class="winner-modal-title">You landed on...</h2>
-        <div id="winnerSegmentName" class="winner-modal-segment" aria-live="polite">Prize Name</div>
+        <div
+          id="winnerSegmentName"
+          class="winner-modal-segment"
+          aria-live="polite"
+        >
+          Prize Name
+        </div>
         <button
           id="shareResultButton"
           class="winner-modal-button"
@@ -410,7 +458,9 @@
         >
           Copy share link
         </button>
-        <button id="spinAgainButton" class="winner-modal-button">Spin Again</button>
+        <button id="spinAgainButton" class="winner-modal-button">
+          Spin Again
+        </button>
       </div>
     </div>
 

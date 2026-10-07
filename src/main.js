@@ -1,21 +1,30 @@
-import * as THREE from 'three';
+import * as THREE from "three";
 
-import { Wheel } from './components/Wheel.js';
-import { APP_CONFIG } from './config/appConfig.js';
-import { SpinController } from './controllers/SpinController.js';
-import { ConfettiSystem } from './effects/ConfettiSystem.js';
+import { Wheel } from "./components/Wheel.js";
+import { APP_CONFIG } from "./config/appConfig.js";
+import { SpinController } from "./controllers/SpinController.js";
+import { ConfettiSystem } from "./effects/ConfettiSystem.js";
+import {
+  loadFxSettings,
+  playResultCue,
+  saveFxSettings,
+  shouldPulseLeds,
+  shouldSpawnConfetti,
+} from "./utils/fxSettings.js";
 import {
   pushSpinHistory,
   saveSegments,
   exportPreset,
   importPreset,
   MIN_SEGMENTS,
-} from './utils/segmentStore.js';
+} from "./utils/segmentStore.js";
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(APP_CONFIG.scene.backgroundColor);
 
-scene.add(new THREE.AmbientLight(0x404040, APP_CONFIG.scene.ambientLightIntensity));
+scene.add(
+  new THREE.AmbientLight(0x404040, APP_CONFIG.scene.ambientLightIntensity),
+);
 const directionalLight = new THREE.DirectionalLight(
   0xffffff,
   APP_CONFIG.scene.directionalLightIntensity,
@@ -35,7 +44,7 @@ camera.position.set(
   APP_CONFIG.scene.cameraPosition.z,
 );
 
-const canvas = document.querySelector('#c');
+const canvas = document.querySelector("#c");
 if (!canvas) {
   throw new Error('Canvas element with id "c" not found');
 }
@@ -44,14 +53,14 @@ let renderer;
 try {
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 } catch (error) {
-  const fallback = document.getElementById('webglFallback');
-  if (fallback) fallback.dataset.visible = 'true';
+  const fallback = document.getElementById("webglFallback");
+  if (fallback) fallback.dataset.visible = "true";
   throw error;
 }
 if (!renderer.getContext()) {
-  const fallback = document.getElementById('webglFallback');
-  if (fallback) fallback.dataset.visible = 'true';
-  throw new Error('WebGL context unavailable');
+  const fallback = document.getElementById("webglFallback");
+  if (fallback) fallback.dataset.visible = "true";
+  throw new Error("WebGL context unavailable");
 }
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -61,34 +70,43 @@ const spinController = new SpinController();
 const confettiSystem = new ConfettiSystem(scene);
 confettiSystem.setCamera(camera);
 
-const spinButton = document.getElementById('spinButton');
+// Weighted landing (#24): segments may carry an optional `weight` (default 1).
+spinController.setSegmentWeights(
+  (APP_CONFIG.wheel.segments || []).map((s) =>
+    Number.isFinite(s?.weight) ? s.weight : 1,
+  ),
+);
+
+let fxSettings = loadFxSettings();
+
+const spinButton = document.getElementById("spinButton");
 if (!spinButton) {
-  throw new Error('Spin button element not found');
+  throw new Error("Spin button element not found");
 }
 
-const winnerOverlay = document.getElementById('winnerOverlay');
-const winnerSegmentName = document.getElementById('winnerSegmentName');
-const spinAgainButton = document.getElementById('spinAgainButton');
+const winnerOverlay = document.getElementById("winnerOverlay");
+const winnerSegmentName = document.getElementById("winnerSegmentName");
+const spinAgainButton = document.getElementById("spinAgainButton");
 if (!winnerOverlay || !winnerSegmentName || !spinAgainButton) {
-  throw new Error('Winner modal elements not found');
+  throw new Error("Winner modal elements not found");
 }
 
 /** Shareable spin result via URL hash (#26). Format: #spin=<b64url(json)> */
 function encodeSpinShare(payload) {
   const json = JSON.stringify(payload);
   let b64 = btoa(unescape(encodeURIComponent(json)))
-    .replaceAll('+', '-')
-    .replaceAll('/', '_');
-  while (b64.endsWith('=')) b64 = b64.slice(0, -1);
+    .replaceAll("+", "-")
+    .replaceAll("/", "_");
+  while (b64.endsWith("=")) b64 = b64.slice(0, -1);
   return `#spin=${b64}`;
 }
 
 function decodeSpinShare(hash) {
-  const m = (hash || '').match(/[#&?]spin=([A-Za-z0-9_-]+)/);
+  const m = (hash || "").match(/[#&?]spin=([A-Za-z0-9_-]+)/);
   if (!m) return null;
   try {
-    let b64 = m[1].replaceAll('-', '+').replaceAll('_', '/');
-    while (b64.length % 4) b64 += '=';
+    let b64 = m[1].replaceAll("-", "+").replaceAll("_", "/");
+    while (b64.length % 4) b64 += "=";
     return JSON.parse(decodeURIComponent(escape(atob(b64))));
   } catch {
     return null;
@@ -102,7 +120,7 @@ function currentSegmentLabels() {
 function applySharedResult(data) {
   if (!data || !data.winner) return false;
   showWinnerModal(data.winner);
-  const status = document.getElementById('spinStatus');
+  const status = document.getElementById("spinStatus");
   if (status) status.textContent = `Shared result: ${data.winner}`;
   return true;
 }
@@ -118,12 +136,12 @@ async function copyShareLink(winnerLabel) {
     await navigator.clipboard.writeText(url);
     return true;
   } catch {
-    const ta = document.createElement('textarea');
+    const ta = document.createElement("textarea");
     ta.value = url;
     document.body.append(ta);
     ta.select();
     try {
-      return document.execCommand('copy');
+      return document.execCommand("copy");
     } finally {
       ta.remove();
     }
@@ -148,8 +166,8 @@ function showWinnerModal(segmentLabel) {
   winnerSegmentName.textContent = segmentLabel;
 
   // Show the modal
-  winnerOverlay.classList.add('show');
-  winnerOverlay.setAttribute('aria-hidden', 'false');
+  winnerOverlay.classList.add("show");
+  winnerOverlay.setAttribute("aria-hidden", "false");
 
   // Move focus to the "Spin Again" button for keyboard navigation
   spinAgainButton.focus();
@@ -157,8 +175,8 @@ function showWinnerModal(segmentLabel) {
 
 function closeWinnerModal() {
   // Hide the modal
-  winnerOverlay.classList.remove('show');
-  winnerOverlay.setAttribute('aria-hidden', 'true');
+  winnerOverlay.classList.remove("show");
+  winnerOverlay.setAttribute("aria-hidden", "true");
 
   // Restore focus to the previously focused element (or the spin button)
   if (previouslyFocusedElement && previouslyFocusedElement !== document.body) {
@@ -174,50 +192,51 @@ function handleSpinClick() {
   }
 
   spinButton.disabled = true;
-  spinButton.setAttribute('aria-busy', 'true');
-  spinButton.setAttribute('aria-label', 'Spinning');
+  spinButton.setAttribute("aria-busy", "true");
+  spinButton.setAttribute("aria-label", "Spinning");
   spinButton.textContent = APP_CONFIG.ui.buttonDisabledText;
-  const status = document.getElementById('spinStatus');
-  if (status) status.textContent = 'Spin started';
+  const status = document.getElementById("spinStatus");
+  if (status) status.textContent = "Spin started";
 
   spinController.startSpin((_finalAngle) => {
     const winningSegment = wheel.getCurrentSegment();
-    const reduceMotion = globalThis.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (!reduceMotion) {
+    if (shouldSpawnConfetti(fxSettings)) {
       confettiSystem.createConfetti();
     }
+    playResultCue(fxSettings);
 
     // Show the winner announcement modal
     showWinnerModal(winningSegment.label);
 
     setTimeout(() => {
       spinButton.disabled = false;
-      spinButton.setAttribute('aria-busy', 'false');
-      spinButton.removeAttribute('aria-label');
+      spinButton.setAttribute("aria-busy", "false");
+      spinButton.removeAttribute("aria-label");
       spinButton.textContent = APP_CONFIG.ui.buttonText;
-      if (status) status.textContent = `Result: ${winnerSegmentName?.textContent || 'done'}`;
+      if (status)
+        status.textContent = `Result: ${winnerSegmentName?.textContent || "done"}`;
     }, APP_CONFIG.ui.buttonCooldown);
   });
 }
 
-spinButton.addEventListener('click', handleSpinClick);
-canvas.addEventListener('click', handleSpinClick);
-canvas.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter' || event.key === ' ') {
+spinButton.addEventListener("click", handleSpinClick);
+canvas.addEventListener("click", handleSpinClick);
+canvas.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
     handleSpinClick();
   }
 });
-spinAgainButton.addEventListener('click', closeWinnerModal);
+spinAgainButton.addEventListener("click", closeWinnerModal);
 
-const shareResultButton = document.getElementById('shareResultButton');
+const shareResultButton = document.getElementById("shareResultButton");
 if (shareResultButton) {
-  shareResultButton.addEventListener('click', async () => {
+  shareResultButton.addEventListener("click", async () => {
     const label = lastWinnerLabel || winnerSegmentName.textContent;
     const ok = await copyShareLink(label);
-    shareResultButton.textContent = ok ? 'Link copied' : 'Copy failed';
+    shareResultButton.textContent = ok ? "Link copied" : "Copy failed";
     setTimeout(() => {
-      shareResultButton.textContent = 'Copy share link';
+      shareResultButton.textContent = "Copy share link";
     }, 1500);
   });
 }
@@ -226,8 +245,8 @@ const shared = decodeSpinShare(location.hash);
 if (shared) applySharedResult(shared);
 
 // Handle Escape key to close the modal
-globalThis.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && winnerOverlay.classList.contains('show')) {
+globalThis.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && winnerOverlay.classList.contains("show")) {
     closeWinnerModal();
   }
 });
@@ -245,7 +264,7 @@ function animate() {
 
   const angle = spinController.update();
   wheel.updateRotation(angle);
-  wheel.updateLEDs(animationTime);
+  wheel.updateLEDs(animationTime, { pulse: shouldPulseLeds(fxSettings) });
   confettiSystem.update();
   renderer.render(scene, camera);
 }
@@ -263,10 +282,10 @@ function handleResize() {
   }, APP_CONFIG.animation.resizeDebounceMs);
 }
 
-window.addEventListener('resize', handleResize);
+window.addEventListener("resize", handleResize);
 
 function cleanup() {
-  window.removeEventListener('resize', handleResize);
+  window.removeEventListener("resize", handleResize);
   if (resizeTimeout) {
     clearTimeout(resizeTimeout);
   }
@@ -274,15 +293,15 @@ function cleanup() {
   scene.clear();
 }
 
-window.addEventListener('beforeunload', cleanup);
+window.addEventListener("beforeunload", cleanup);
 
 function setupSegmentEditor(appConfig, rebuildWheel) {
-  const ta = document.getElementById('segmentPresetJson');
-  const status = document.getElementById('segmentEditorStatus');
-  const saveBtn = document.getElementById('segmentSaveBtn');
-  const exportBtn = document.getElementById('segmentExportBtn');
-  const importBtn = document.getElementById('segmentImportBtn');
-  const fileInput = document.getElementById('segmentImportFile');
+  const ta = document.getElementById("segmentPresetJson");
+  const status = document.getElementById("segmentEditorStatus");
+  const saveBtn = document.getElementById("segmentSaveBtn");
+  const exportBtn = document.getElementById("segmentExportBtn");
+  const importBtn = document.getElementById("segmentImportBtn");
+  const fileInput = document.getElementById("segmentImportFile");
   if (!ta || !saveBtn) return;
 
   const syncTa = () => {
@@ -290,36 +309,37 @@ function setupSegmentEditor(appConfig, rebuildWheel) {
   };
   syncTa();
 
-  saveBtn.addEventListener('click', () => {
+  saveBtn.addEventListener("click", () => {
     try {
       const next = importPreset(ta.value);
-      if (next.length < MIN_SEGMENTS) throw new Error(`need at least ${MIN_SEGMENTS}`);
+      if (next.length < MIN_SEGMENTS)
+        throw new Error(`need at least ${MIN_SEGMENTS}`);
       saveSegments(next);
       appConfig.segments = next;
-      status.textContent = 'Saved. Reload to rebuild wheel meshes.';
-      if (typeof rebuildWheel === 'function') rebuildWheel();
+      status.textContent = "Saved. Reload to rebuild wheel meshes.";
+      if (typeof rebuildWheel === "function") rebuildWheel();
       else location.reload();
     } catch (error) {
       status.textContent = String(error.message || error);
     }
   });
-  exportBtn?.addEventListener('click', () => {
+  exportBtn?.addEventListener("click", () => {
     const blob = new Blob([exportPreset(appConfig.segments)], {
-      type: 'application/json',
+      type: "application/json",
     });
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = 'wheel-segments.json';
+    a.download = "wheel-segments.json";
     a.click();
     URL.revokeObjectURL(a.href);
   });
-  importBtn?.addEventListener('click', () => fileInput?.click());
-  fileInput?.addEventListener('change', async () => {
+  importBtn?.addEventListener("click", () => fileInput?.click());
+  fileInput?.addEventListener("change", async () => {
     const f = fileInput.files?.[0];
     if (!f) return;
     try {
       ta.value = await f.text();
-      status.textContent = 'Imported into editor — click Save segments.';
+      status.textContent = "Imported into editor — click Save segments.";
     } catch (error) {
       status.textContent = String(error.message || error);
     }
@@ -327,3 +347,28 @@ function setupSegmentEditor(appConfig, rebuildWheel) {
 }
 
 setupSegmentEditor(APP_CONFIG.wheel);
+
+/** FX / audio settings panel (#24, #27). */
+function setupFxSettings() {
+  const ids = {
+    audio: "fxAudio",
+    confetti: "fxConfetti",
+    forceReducedMotion: "fxReduceMotion",
+    ledPulse: "fxLedPulse",
+  };
+  for (const [key, id] of Object.entries(ids)) {
+    const input = document.getElementById(id);
+    if (!input) continue;
+    input.checked = Boolean(fxSettings[key]);
+    input.addEventListener("change", () => {
+      fxSettings = { ...fxSettings, [key]: input.checked };
+      try {
+        saveFxSettings(fxSettings);
+      } catch {
+        /* ignore quota / private mode */
+      }
+    });
+  }
+}
+
+setupFxSettings();
