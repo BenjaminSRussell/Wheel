@@ -14,7 +14,11 @@ function getAllJsFiles(dir, fileList = []) {
   files.forEach((file) => {
     const filePath = join(dir, file);
     const stat = statSync(filePath);
-    if (stat.isDirectory() && !filePath.includes('node_modules') && !filePath.includes('__tests__')) {
+    if (
+      stat.isDirectory() &&
+      !filePath.includes('node_modules') &&
+      !filePath.includes('__tests__')
+    ) {
       getAllJsFiles(filePath, fileList);
     } else if (file.endsWith('.js')) {
       fileList.push(filePath);
@@ -60,4 +64,3 @@ describe('Anti-pattern detection', () => {
     expect(jsFiles.length).toBeGreaterThan(0);
   });
 });
-

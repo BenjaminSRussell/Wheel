@@ -128,6 +128,7 @@ The project ships with automated quality tooling to keep the codebase consistent
 ### Pre-commit Hooks
 
 The project uses Husky and lint-staged to automatically run quality checks before each commit:
+
 - ESLint with auto-fix on staged JavaScript files
 - Prettier formatting on all staged files
 - Jest tests for changed test files
@@ -149,6 +150,7 @@ npm run test:ci   # Run tests in CI mode
 ```
 
 Tests cover:
+
 - Utility functions (crypto, math helpers)
 - Spin controller physics logic
 - Repository-level anti-pattern detection (no emojis, no empty catch blocks)
@@ -168,14 +170,14 @@ Customizing the wheel is easy! All the main configuration is located in `src/com
 
    ```javascript
    segments: [
-     { label: 'JavaScript', color: 0x3498db },
-     { label: 'Python', color: 0x2ecc71 },
-     { label: 'TypeScript', color: 0x9b59b6 },
-     { label: 'React', color: 0xe74c3c },
-     { label: 'Node.js', color: 0x1abc9c },
-     { label: 'Go', color: 0x34495e },
-     { label: 'Rust', color: 0xf39c12 },
-     { label: 'Swift', color: 0x27ae60 },
+     { label: "JavaScript", color: 0x3498db },
+     { label: "Python", color: 0x2ecc71 },
+     { label: "TypeScript", color: 0x9b59b6 },
+     { label: "React", color: 0xe74c3c },
+     { label: "Node.js", color: 0x1abc9c },
+     { label: "Go", color: 0x34495e },
+     { label: "Rust", color: 0xf39c12 },
+     { label: "Swift", color: 0x27ae60 },
    ];
    ```
 

@@ -110,7 +110,7 @@ function handleSpinClick() {
   const status = document.getElementById("spinStatus");
   if (status) status.textContent = "Spin started";
 
-  spinController.startSpin((finalAngle) => {
+  spinController.startSpin((_finalAngle) => {
     const winningSegment = wheel.getCurrentSegment();
     const reduceMotion = globalThis.matchMedia(
       "(prefers-reduced-motion: reduce)",
